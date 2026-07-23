@@ -1,7 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
+
+/* ============================================
+   RETRO-FUTURISTIC DESIGN TOKENS
+   Deep Black, Neon Cyan/Magenta, Scanlines
+   ============================================ */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -43,83 +49,134 @@
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
+  /* Retro-Futuristic Color Palette */
+  --primary: oklch(0.5 0.3 180);      /* Neon Cyan */
+  --primary-foreground: oklch(0.05 0 0);
+  --sidebar-primary: oklch(0.5 0.3 180);
+  --sidebar-primary-foreground: oklch(0.95 0 0);
+  
+  /* Chart colors - neon palette */
+  --chart-1: oklch(0.6 0.3 180);      /* Cyan */
+  --chart-2: oklch(0.6 0.3 300);      /* Magenta */
+  --chart-3: oklch(0.6 0.3 120);      /* Lime */
+  --chart-4: oklch(0.5 0.3 180);
+  --chart-5: oklch(0.5 0.3 300);
+  
+  --radius: 0.25rem;
+  
+  /* Deep Black Background */
+  --background: oklch(0.02 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.08 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.08 0 0);
+  --popover-foreground: oklch(1 0 0);
+  
+  /* Secondary - Neon Magenta */
+  --secondary: oklch(0.6 0.3 300);
+  --secondary-foreground: oklch(0.02 0 0);
+  
+  /* Muted - Dark Gray */
+  --muted: oklch(0.2 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+  
+  /* Accent - Neon Cyan */
+  --accent: oklch(0.5 0.3 180);
+  --accent-foreground: oklch(0.02 0 0);
+  
+  --destructive: oklch(0.6 0.3 30);
+  --destructive-foreground: oklch(0.02 0 0);
+  
+  --border: oklch(0.15 0 0);
+  --input: oklch(0.12 0 0);
+  --ring: oklch(0.5 0.3 180);
+  
+  --sidebar: oklch(0.08 0 0);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.5 0.3 180);
+  --sidebar-accent-foreground: oklch(0.02 0 0);
+  --sidebar-border: oklch(0.15 0 0);
+  --sidebar-ring: oklch(0.5 0.3 180);
 }
 
 .dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  --primary: oklch(0.5 0.3 180);
+  --primary-foreground: oklch(0.05 0 0);
+  --sidebar-primary: oklch(0.5 0.3 180);
+  --sidebar-primary-foreground: oklch(0.95 0 0);
+  --background: oklch(0.02 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.08 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.08 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --secondary: oklch(0.6 0.3 300);
+  --secondary-foreground: oklch(0.02 0 0);
+  --muted: oklch(0.2 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+  --accent: oklch(0.5 0.3 180);
+  --accent-foreground: oklch(0.02 0 0);
+  --destructive: oklch(0.6 0.3 30);
+  --destructive-foreground: oklch(0.02 0 0);
+  --border: oklch(0.15 0 0);
+  --input: oklch(0.12 0 0);
+  --ring: oklch(0.5 0.3 180);
+  --chart-1: oklch(0.6 0.3 180);
+  --chart-2: oklch(0.6 0.3 300);
+  --chart-3: oklch(0.6 0.3 120);
+  --chart-4: oklch(0.5 0.3 180);
+  --chart-5: oklch(0.5 0.3 300);
+  --sidebar: oklch(0.08 0 0);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.5 0.3 180);
+  --sidebar-accent-foreground: oklch(0.02 0 0);
+  --sidebar-border: oklch(0.15 0 0);
+  --sidebar-ring: oklch(0.5 0.3 180);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  
+  html {
+    /* Scanline texture overlay */
+    background-image: 
+      repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.03),
+        rgba(0, 0, 0, 0.03) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+    background-attachment: fixed;
+  }
+  
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', 'Space Mono', monospace;
+    position: relative;
   }
+  
+  /* Typography - Bold, High Impact */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', 'Space Mono', monospace;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  
+  h1 {
+    @apply text-4xl md:text-6xl font-bold;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl font-bold;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl font-bold;
+  }
+  
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   [type="button"]:not(:disabled),
@@ -134,24 +191,211 @@
 }
 
 @layer components {
-  /**
-   * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
-   */
+  /* ============================================
+     GLASSMORPHISM CARDS
+     ============================================ */
+  .glass-card {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 rounded;
+    box-shadow: 0 8px 32px 0 rgba(0, 255, 255, 0.1);
+  }
+  
+
+  
+  /* ============================================
+     NEON GLOW EFFECTS
+     ============================================ */
+  .neon-cyan {
+    @apply text-cyan-400;
+    text-shadow: 0 0 10px oklch(0.5 0.3 180), 0 0 20px oklch(0.5 0.3 180);
+  }
+  
+  .neon-magenta {
+    @apply text-pink-500;
+    text-shadow: 0 0 10px oklch(0.6 0.3 300), 0 0 20px oklch(0.6 0.3 300);
+  }
+  
+  .neon-lime {
+    @apply text-lime-400;
+    text-shadow: 0 0 10px oklch(0.6 0.3 120), 0 0 20px oklch(0.6 0.3 120);
+  }
+  
+  .glow-cyan {
+    box-shadow: 0 0 20px oklch(0.5 0.3 180), 0 0 40px oklch(0.5 0.3 180);
+  }
+  
+  .glow-magenta {
+    box-shadow: 0 0 20px oklch(0.6 0.3 300), 0 0 40px oklch(0.6 0.3 300);
+  }
+  
+  /* ============================================
+     TECHNICAL ARTIFACTS & ERROR CODES
+     ============================================ */
+  .error-code {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    @apply text-muted-foreground opacity-50;
+  }
+  
+  .bracket-left::before {
+    content: '[ ';
+    @apply text-cyan-400 mr-1;
+  }
+  
+  .bracket-right::after {
+    content: ' ]';
+    @apply text-pink-500 ml-1;
+  }
+  
+  .digital-noise {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .digital-noise::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" seed="2" /></filter><rect width="100" height="100" fill="%23000" filter="url(%23noise)" opacity="0.05"/></svg>');
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* ============================================
+     SMOOTH SCROLL ANIMATIONS
+     ============================================ */
+  .scroll-fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: scroll-fade-in 0.6s ease-out forwards;
+  }
+  
+  @keyframes scroll-fade-in {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .scroll-slide-in-left {
+    opacity: 0;
+    transform: translateX(-30px);
+    animation: scroll-slide-in-left 0.6s ease-out forwards;
+  }
+  
+  @keyframes scroll-slide-in-left {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .scroll-slide-in-right {
+    opacity: 0;
+    transform: translateX(30px);
+    animation: scroll-slide-in-right 0.6s ease-out forwards;
+  }
+  
+  @keyframes scroll-slide-in-right {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  /* ============================================
+     FLOATING & PULSE ANIMATIONS
+     ============================================ */
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+  
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 0.6;
+      filter: drop-shadow(0 0 10px oklch(0.5 0.3 180));
+    }
+    50% {
+      opacity: 1;
+      filter: drop-shadow(0 0 20px oklch(0.5 0.3 180));
+    }
+  }
+  
+  /* ============================================
+     WAVEFORM VISUALIZER STYLES
+     ============================================ */
+  .waveform-container {
+    @apply w-full h-24 bg-black/50 rounded border border-white/10 overflow-hidden;
+    backdrop-filter: blur(10px);
+  }
+  
+  .waveform-bar {
+    @apply bg-gradient-to-t from-cyan-400 to-cyan-300;
+    animation: waveform-bar 0.1s ease-out;
+  }
+  
+  @keyframes waveform-bar {
+    from {
+      height: 0;
+    }
+  }
+  
+  /* ============================================
+     CHROMATIC ABERRATION EFFECT
+     ============================================ */
+  .chromatic-text {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .chromatic-text::before,
+  .chromatic-text::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    z-index: -1;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+  }
+  
+  .chromatic-text::before {
+    color: oklch(0.5 0.3 180);
+    transform: translateX(-2px);
+    opacity: 0.8;
+  }
+  
+  .chromatic-text::after {
+    color: oklch(0.6 0.3 300);
+    transform: translateX(2px);
+    opacity: 0.8;
+  }
+  
+  /* ============================================
+     CONTAINER & FLEX UTILITIES
+     ============================================ */
   .container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem; /* 16px - mobile padding */
+    padding-left: 1rem;
     padding-right: 1rem;
   }
 
@@ -162,16 +406,16 @@
 
   @media (min-width: 640px) {
     .container {
-      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-left: 1.5rem;
       padding-right: 1.5rem;
     }
   }
 
   @media (min-width: 1024px) {
     .container {
-      padding-left: 2rem; /* 32px - desktop padding */
+      padding-left: 2rem;
       padding-right: 2rem;
-      max-width: 1280px; /* Standard content width */
+      max-width: 1280px;
     }
   }
 }
