@@ -6,6 +6,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Explore from "./pages/Explore";
+import Profile from "./pages/Profile";
+import CollaborationRoom from "./pages/CollaborationRoom";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -13,6 +15,8 @@ function Router() {
     <Switch>
       <Route path="" component={Home} />
       <Route path="/explore" component={Explore} />
+      <Route path="/profile/:userId" component={Profile} />
+      <Route path="/collaboration/:collabId" component={CollaborationRoom} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
