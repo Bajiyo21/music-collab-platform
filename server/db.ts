@@ -90,21 +90,26 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       set: updateSet,
     });
 
-    // Create user profile if it doesn't exist
-    const existingProfile = await db
-      .select()
-      .from(userProfiles)
-      .where(eq(userProfiles.userId, (await getUserByOpenId(user.openId))?.id || 0))
-      .limit(1);
-
-    if (existingProfile.length === 0) {
+    // Create user profile if it doesn't exist (skip if table doesn't exist)
+    try {
       const newUser = await getUserByOpenId(user.openId);
       if (newUser) {
-        await db.insert(userProfiles).values({
-          userId: newUser.id,
-          experienceLevel: "beginner",
-        });
+        const existingProfile = await db
+          .select()
+          .from(userProfiles)
+          .where(eq(userProfiles.userId, newUser.id))
+          .limit(1);
+
+        if (existingProfile.length === 0) {
+          await db.insert(userProfiles).values({
+            userId: newUser.id,
+            experienceLevel: "beginner",
+          });
+        }
       }
+    } catch (profileError) {
+      // Silently fail if user_profiles table doesn't exist yet
+      console.debug("[Database] Could not create user profile (table may not exist yet)");
     }
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
