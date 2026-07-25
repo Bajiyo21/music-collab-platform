@@ -36,14 +36,14 @@ export default function Home() {
             {isAuthenticated ? (
               <>
                 <span className="text-sm text-muted-foreground hidden sm:inline">{user?.name}</span>
-                <Button onClick={handleDashboard} className="px-4 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all">
+                <button onClick={handleDashboard} className="px-4 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all cursor-pointer">
                   Dashboard
-                </Button>
+                </button>
               </>
             ) : (
-              <Button className="px-4 py-2 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all">
+              <button className="px-4 py-2 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer">
                 Sign In
-              </Button>
+              </button>
             )}
           </div>
         </div>
@@ -87,12 +87,12 @@ export default function Home() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button onClick={handleExplore} className="px-8 py-4 bg-cyan-400 text-black font-bold rounded hover:bg-cyan-300 transition-all transform hover:scale-105">
+            <button onClick={handleExplore} className="px-8 py-4 bg-cyan-400 text-black font-bold rounded hover:bg-cyan-300 transition-all transform hover:scale-105 cursor-pointer">
               Explore Tracks
-            </Button>
-            <Button className="px-8 py-4 bg-black/40 border border-magenta-400/50 text-magenta-400 font-bold rounded hover:bg-black/60 transition-all">
+            </button>
+            <button onClick={handleExplore} className="px-8 py-4 bg-black/40 border border-magenta-400/50 text-magenta-400 font-bold rounded hover:bg-black/60 transition-all cursor-pointer">
               Get Started
-            </Button>
+            </button>
           </div>
 
           {/* Status */}

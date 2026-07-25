@@ -78,11 +78,11 @@ export default function Dashboard() {
             <h1 className="text-4xl font-bold mb-2">Welcome back, {user?.name}!</h1>
             <p className="text-muted-foreground mb-6">Ready to create something amazing?</p>
             <div className="flex gap-4 flex-wrap">
-              <button className="flex items-center gap-2 px-6 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all">
+              <button onClick={() => {}} className="flex items-center gap-2 px-6 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all cursor-pointer">
                 <Plus className="w-5 h-5" />
                 Upload Track
               </button>
-              <button className="flex items-center gap-2 px-6 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all">
+              <button onClick={() => {}} className="flex items-center gap-2 px-6 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer">
                 <Users className="w-5 h-5" />
                 New Collaboration
               </button>
@@ -184,15 +184,15 @@ export default function Dashboard() {
               <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-6 h-fit">
                 <h3 className="text-lg font-bold mb-6">Quick Actions</h3>
                 <div className="space-y-3">
-                  <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all">
+                  <button onClick={() => {}} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all cursor-pointer">
                     <Plus className="w-4 h-4" />
                     New Track
                   </button>
-                  <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all">
+                  <button onClick={() => {}} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer">
                     <Users className="w-4 h-4" />
                     New Collab
                   </button>
-                  <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black/40 border border-white/10 hover:bg-black/60 rounded font-semibold transition-all">
+                  <button onClick={() => {}} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black/40 border border-white/10 hover:bg-black/60 rounded font-semibold transition-all cursor-pointer">
                     <Music className="w-4 h-4" />
                     New Playlist
                   </button>
@@ -227,7 +227,7 @@ export default function Dashboard() {
               <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
               <h3 className="text-xl font-bold mb-2">Active Collaborations</h3>
               <p className="text-muted-foreground mb-6">You have {MOCK_STATS.totalCollaborations} active collaborations</p>
-              <button className="flex items-center gap-2 px-6 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all mx-auto">
+              <button onClick={() => {}} className="flex items-center gap-2 px-6 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all mx-auto cursor-pointer">
                 <Plus className="w-4 h-4" />
                 Start New Collaboration
               </button>
@@ -239,7 +239,7 @@ export default function Dashboard() {
               <Music className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
               <h3 className="text-xl font-bold mb-2">Your Playlists</h3>
               <p className="text-muted-foreground mb-6">You have {MOCK_STATS.totalPlaylists} playlists</p>
-              <button className="flex items-center gap-2 px-6 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all mx-auto">
+              <button onClick={() => {}} className="flex items-center gap-2 px-6 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all mx-auto cursor-pointer">
                 <Plus className="w-4 h-4" />
                 Create Playlist
               </button>
