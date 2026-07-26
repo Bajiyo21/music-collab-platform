@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { Music, Zap, Users, Headphones } from "lucide-react";
+import { startLogin } from "@/const";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -41,7 +42,7 @@ export default function Home() {
                 </button>
               </>
             ) : (
-              <button className="px-4 py-2 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer">
+              <button onClick={() => startLogin()} className="px-4 py-2 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer">
                 Sign In
               </button>
             )}
