@@ -9,6 +9,7 @@ import Explore from "./pages/Explore";
 import Profile from "./pages/Profile";
 import CollaborationRoom from "./pages/CollaborationRoom";
 import Dashboard from "./pages/Dashboard";
+import Upload from "./pages/Upload";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/explore" component={Explore} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/upload" component={Upload} />
       <Route path="/profile/:userId" component={Profile} />
       <Route path="/collaboration/:collabId" component={CollaborationRoom} />
       <Route path="/404" component={NotFound} />
@@ -34,10 +36,10 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+        <ThemeProvider
+          defaultTheme="light"
+          // switchable
+        >
         <TooltipProvider>
           <Toaster />
           <Router />

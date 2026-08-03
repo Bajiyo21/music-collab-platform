@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { Music, Heart, MessageCircle, Share2, Play } from "lucide-react";
+import { Music, Heart, MessageCircle, Share2, Play, ArrowLeft } from "lucide-react";
 
 /**
  * Explore & Discovery Page
@@ -145,6 +145,13 @@ export default function Explore() {
           </nav>
 
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/")}
+              className="px-3 py-2 text-gray-400 hover:text-cyan-400 transition flex items-center gap-1"
+            >
+              <ArrowLeft size={18} />
+              <span className="hidden sm:inline text-sm">Back</span>
+            </button>
             {isAuthenticated ? (
               <Button
                 onClick={() => navigate("/dashboard")}

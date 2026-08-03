@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { Music, Users, Heart, Plus, TrendingUp, LogOut } from "lucide-react";
+import { Music, Users, Heart, Plus, TrendingUp, LogOut, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 const MOCK_STATS = {
@@ -58,6 +58,13 @@ export default function Dashboard() {
           </nav>
 
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/")}
+              className="px-3 py-2 text-gray-400 hover:text-cyan-400 transition flex items-center gap-1"
+            >
+              <ArrowLeft size={18} />
+              <span className="hidden sm:inline text-sm">Back</span>
+            </button>
             <span className="text-sm text-muted-foreground hidden sm:inline">{user?.name || "User"}</span>
             <button
               onClick={() => logout()}
@@ -78,6 +85,13 @@ export default function Dashboard() {
             <h1 className="text-4xl font-bold mb-2">Welcome back, {user?.name}!</h1>
             <p className="text-muted-foreground mb-6">Ready to create something amazing?</p>
             <div className="flex gap-4 flex-wrap">
+              <button
+                onClick={() => navigate("/upload")}
+                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition"
+              >
+                <Plus size={20} />
+                Upload Track
+              </button>
               <button onClick={() => {}} className="flex items-center gap-2 px-6 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all cursor-pointer">
                 <Plus className="w-5 h-5" />
                 Upload Track
