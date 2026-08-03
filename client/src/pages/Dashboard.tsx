@@ -96,9 +96,9 @@ export default function Dashboard() {
                 <Plus className="w-5 h-5" />
                 Upload Track
               </button>
-              <button onClick={() => {}} className="flex items-center gap-2 px-6 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer">
+              <button onClick={() => navigate("/collaborate")} className="flex items-center gap-2 px-6 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer">
                 <Users className="w-5 h-5" />
-                New Collaboration
+                Collaborate
               </button>
             </div>
           </div>

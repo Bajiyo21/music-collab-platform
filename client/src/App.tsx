@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Explore from "./pages/Explore";
 import Profile from "./pages/Profile";
 import CollaborationRoom from "./pages/CollaborationRoom";
+import CollaborationHub from "./pages/CollaborationHub";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/explore" component={Explore} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/upload" component={Upload} />
+      <Route path="/collaborate" component={CollaborationHub} />
       <Route path="/profile/:userId" component={Profile} />
       <Route path="/collaboration/:collabId" component={CollaborationRoom} />
       <Route path="/404" component={NotFound} />
