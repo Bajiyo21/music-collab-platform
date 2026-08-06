@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Users, Plus, ArrowLeft, Search, Filter, Music, Clock, User } from "lucide-react";
@@ -62,9 +62,11 @@ export default function CollaborationHub() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newProjectTitle, setNewProjectTitle] = useState("");
-  const [newProjectDesc, setNewProjectDesc] = useState("");
-  const [newProjectGenre, setNewProjectGenre] = useState("Electronic");
+  
+  // Use refs to capture form values directly
+  const titleRef = useRef<HTMLInputElement>(null);
+  const descRef = useRef<HTMLTextAreaElement>(null);
+  const genreRef = useRef<HTMLSelectElement>(null);
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =
@@ -80,7 +82,11 @@ export default function CollaborationHub() {
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newProjectTitle.trim()) {
+    const title = titleRef.current?.value.trim() || "";
+    const description = descRef.current?.value.trim() || "";
+    const genre = genreRef.current?.value || "Electronic";
+
+    if (!title) {
       toast.error("Please enter a project title");
       return;
     }
@@ -92,21 +98,24 @@ export default function CollaborationHub() {
 
     const newProject: CollaborationProject = {
       id: Math.max(...projects.map((p) => p.id), 0) + 1,
-      title: newProjectTitle,
-      description: newProjectDesc,
+      title: title,
+      description: description,
       creatorName: user?.name || "Anonymous",
       creatorId: user?.id || 0,
       contributors: 1,
       status: "draft",
       createdAt: new Date().toISOString().split("T")[0],
-      genre: newProjectGenre,
+      genre: genre,
     };
 
     setProjects([newProject, ...projects]);
-    toast.success(`Project "${newProjectTitle}" created successfully!`);
-    setNewProjectTitle("");
-    setNewProjectDesc("");
-    setNewProjectGenre("Electronic");
+    toast.success(`Project "${title}" created successfully!`);
+    
+    // Reset form
+    if (titleRef.current) titleRef.current.value = "";
+    if (descRef.current) descRef.current.value = "";
+    if (genreRef.current) genreRef.current.value = "Electronic";
+    
     setShowCreateModal(false);
 
     setTimeout(() => navigate(`/collaboration/${newProject.id}`), 1000);
@@ -318,12 +327,11 @@ export default function CollaborationHub() {
               {/* Title */}
               <div>
                 <label className="block text-sm font-semibold mb-2">Project Title *</label>
-                <Input
+                <input
+                  ref={titleRef}
                   type="text"
-                  value={newProjectTitle}
-                  onChange={(e) => setNewProjectTitle(e.target.value)}
-                  placeholder="e.g., Neon Dreams Remix"
-                  className="bg-white/5 border-white/10 text-white placeholder-gray-500"
+                  placeholder="e.g., My Awesome Collab"
+                  className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition"
                 />
               </div>
 
@@ -331,8 +339,7 @@ export default function CollaborationHub() {
               <div>
                 <label className="block text-sm font-semibold mb-2">Description</label>
                 <textarea
-                  value={newProjectDesc}
-                  onChange={(e) => setNewProjectDesc(e.target.value)}
+                  ref={descRef}
                   placeholder="Describe your collaboration project..."
                   rows={3}
                   className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition resize-none"
@@ -343,8 +350,8 @@ export default function CollaborationHub() {
               <div>
                 <label className="block text-sm font-semibold mb-2">Genre</label>
                 <select
-                  value={newProjectGenre}
-                  onChange={(e) => setNewProjectGenre(e.target.value)}
+                  ref={genreRef}
+                  defaultValue="Electronic"
                   className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-400/50 transition"
                 >
                   <option value="Electronic">Electronic</option>
