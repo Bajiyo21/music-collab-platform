@@ -19,7 +19,7 @@ interface CollaborationProject {
   image?: string;
 }
 
-const MOCK_PROJECTS: CollaborationProject[] = [
+const INITIAL_PROJECTS: CollaborationProject[] = [
   {
     id: 1,
     title: "Neon Dreams - Remix Collab",
@@ -58,6 +58,7 @@ const MOCK_PROJECTS: CollaborationProject[] = [
 export default function CollaborationHub() {
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
+  const [projects, setProjects] = useState<CollaborationProject[]>(INITIAL_PROJECTS);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -65,7 +66,7 @@ export default function CollaborationHub() {
   const [newProjectDesc, setNewProjectDesc] = useState("");
   const [newProjectGenre, setNewProjectGenre] = useState("Electronic");
 
-  const filteredProjects = MOCK_PROJECTS.filter((project) => {
+  const filteredProjects = projects.filter((project) => {
     const matchesSearch =
       project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -89,12 +90,11 @@ export default function CollaborationHub() {
       return;
     }
 
-    // Create new project (mock)
     const newProject: CollaborationProject = {
-      id: MOCK_PROJECTS.length + 1,
+      id: Math.max(...projects.map((p) => p.id), 0) + 1,
       title: newProjectTitle,
       description: newProjectDesc,
-      creatorName: user?.name || "Unknown",
+      creatorName: user?.name || "Anonymous",
       creatorId: user?.id || 0,
       contributors: 1,
       status: "draft",
@@ -102,13 +102,13 @@ export default function CollaborationHub() {
       genre: newProjectGenre,
     };
 
+    setProjects([newProject, ...projects]);
     toast.success(`Project "${newProjectTitle}" created successfully!`);
     setNewProjectTitle("");
     setNewProjectDesc("");
     setNewProjectGenre("Electronic");
     setShowCreateModal(false);
 
-    // Navigate to the new project
     setTimeout(() => navigate(`/collaboration/${newProject.id}`), 1000);
   };
 
@@ -198,22 +198,18 @@ export default function CollaborationHub() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
                 <Input
                   type="text"
-                  placeholder="Search collaborations..."
+                  placeholder="Search projects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-white/5 border-white/10 text-white placeholder-gray-500"
                 />
               </div>
-              <button className="px-4 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition flex items-center gap-2">
-                <Filter size={18} />
-                <span className="hidden sm:inline">Filter</span>
-              </button>
             </div>
 
             {/* Create Button */}
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-6 py-2 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition flex items-center gap-2 w-full md:w-auto justify-center"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition cursor-pointer whitespace-nowrap"
             >
               <Plus size={20} />
               New Collaboration
@@ -243,8 +239,7 @@ export default function CollaborationHub() {
               filteredProjects.map((project) => (
                 <div
                   key={project.id}
-                  className="border border-white/10 rounded-lg p-6 bg-white/5 hover:bg-white/10 hover:border-cyan-400/30 transition group cursor-pointer"
-                  onClick={() => navigate(`/collaboration/${project.id}`)}
+                  className="border border-white/10 rounded-lg p-6 bg-white/5 hover:bg-white/10 hover:border-cyan-400/30 transition group"
                 >
                   {/* Project Header */}
                   <div className="mb-4">
@@ -283,23 +278,26 @@ export default function CollaborationHub() {
                     </div>
                   </div>
 
-                  {/* Action Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleJoinProject(project.id, project.title);
-                    }}
-                    className="w-full px-4 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition font-semibold text-sm"
-                  >
-                    Join Project
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-4 border-t border-white/10">
+                    <button
+                      onClick={() => handleJoinProject(project.id, project.title)}
+                      className="flex-1 px-4 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition font-semibold cursor-pointer"
+                    >
+                      Join
+                    </button>
+                    <button
+                      onClick={() => navigate(`/collaboration/${project.id}`)}
+                      className="flex-1 px-4 py-2 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 rounded hover:bg-magenta-400/30 transition font-semibold cursor-pointer"
+                    >
+                      Preview
+                    </button>
+                  </div>
                 </div>
               ))
             ) : (
               <div className="col-span-full text-center py-12">
-                <Users className="mx-auto mb-4 text-gray-500" size={48} />
-                <p className="text-gray-400 text-lg">No collaborations found</p>
-                <p className="text-gray-500 text-sm mt-2">Try adjusting your search or create a new project</p>
+                <p className="text-gray-400 text-lg">No projects found. Create one to get started!</p>
               </div>
             )}
           </div>
@@ -363,13 +361,13 @@ export default function CollaborationHub() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition font-semibold"
+                  className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black rounded hover:opacity-90 transition font-bold"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black rounded hover:opacity-90 transition font-bold cursor-pointer"
                 >
                   Create
                 </button>

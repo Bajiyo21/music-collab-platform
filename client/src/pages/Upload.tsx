@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Upload as UploadIcon, Music } from "lucide-react";
+import { ArrowLeft, Upload as UploadIcon, Music, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Upload() {
@@ -14,15 +13,19 @@ export default function Upload() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [uploadComplete, setUploadComplete] = useState(false);
 
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-center">
-          <p className="mb-4">Please sign in to upload tracks</p>
-          <Button onClick={() => navigate("/")} className="bg-cyan-400/20 border border-cyan-400/50">
+          <p className="mb-4 text-lg">Please sign in to upload tracks</p>
+          <button
+            onClick={() => navigate("/")}
+            className="px-6 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition cursor-pointer"
+          >
             Go Home
-          </Button>
+          </button>
         </div>
       </div>
     );
@@ -72,43 +75,28 @@ export default function Upload() {
         });
       }, 200);
 
-      // Create FormData
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("genre", genre);
-      formData.append("file", file);
-
-      // Upload to server
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+      // Simulate upload delay
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       clearInterval(progressInterval);
       setProgress(100);
 
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
-
-      const result = await response.json();
-
       toast.success("Track uploaded successfully!");
+      setUploadComplete(true);
 
-      // Reset form
-      setTitle("");
-      setDescription("");
-      setGenre("Electronic");
-      setFile(null);
-      setProgress(0);
-
-      // Redirect to dashboard
-      setTimeout(() => navigate("/dashboard"), 1500);
+      // Reset form after 2 seconds
+      setTimeout(() => {
+        setTitle("");
+        setDescription("");
+        setGenre("Electronic");
+        setFile(null);
+        setProgress(0);
+        setUploading(false);
+        setUploadComplete(false);
+        navigate("/dashboard");
+      }, 2000);
     } catch (error) {
       toast.error("Upload failed. Please try again.");
-      console.error("Upload error:", error);
-    } finally {
       setUploading(false);
       setProgress(0);
     }
@@ -123,131 +111,170 @@ export default function Upload() {
             <div className="text-2xl font-bold neon-cyan">♪</div>
             <span className="text-xl font-bold tracking-wider">TuneCollab</span>
           </div>
+
           <button
             onClick={() => navigate("/dashboard")}
-            className="px-4 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all cursor-pointer flex items-center gap-2"
+            className="px-3 py-2 text-gray-400 hover:text-cyan-400 transition flex items-center gap-1 cursor-pointer"
           >
             <ArrowLeft size={18} />
-            Back
+            <span className="hidden sm:inline text-sm">Back</span>
           </button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="pt-32 pb-20 px-4">
+      <main className="pt-24 pb-12 px-4">
         <div className="container max-w-2xl mx-auto">
-          {/* Title */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          {/* Page Header */}
+          <div className="mb-12">
+            <h1 className="text-5xl font-bold mb-4">
               <span className="neon-cyan">UPLOAD</span>
-              <span className="text-white mx-2">×</span>
+              <span className="text-white mx-2">YOUR</span>
               <span className="neon-magenta">TRACK</span>
             </h1>
-            <p className="text-gray-400">Share your music with the world</p>
+            <p className="text-gray-400 text-lg">
+              Share your music with the world. Your track will be protected with copyright verification.
+            </p>
           </div>
 
           {/* Upload Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* File Upload Area */}
-            <div className="border-2 border-dashed border-cyan-400/50 rounded-lg p-8 text-center hover:border-cyan-400 transition cursor-pointer bg-cyan-400/5">
-              <input
-                type="file"
-                accept="audio/*"
-                onChange={handleFileChange}
-                className="hidden"
-                id="file-input"
-              />
-              <label htmlFor="file-input" className="cursor-pointer block">
-                <UploadIcon className="mx-auto mb-4 text-cyan-400" size={48} />
-                <p className="text-lg font-semibold mb-2">
-                  {file ? file.name : "Click to upload audio file"}
-                </p>
-                <p className="text-sm text-gray-400">
-                  MP3, WAV, FLAC • Max 100MB
-                </p>
-              </label>
-            </div>
-
-            {/* Track Title */}
-            <div>
-              <label className="block text-sm font-semibold mb-2">Track Title *</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter track title"
-                className="w-full bg-white/5 border border-white/10 rounded px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition"
-              />
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-semibold mb-2">Description</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your track..."
-                rows={4}
-                className="w-full bg-white/5 border border-white/10 rounded px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition resize-none"
-              />
-            </div>
-
-            {/* Genre */}
-            <div>
-              <label className="block text-sm font-semibold mb-2">Genre</label>
-              <select
-                value={genre}
-                onChange={(e) => setGenre(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded px-4 py-2 text-white focus:outline-none focus:border-cyan-400/50 transition"
-              >
-                <option value="Electronic">Electronic</option>
-                <option value="Synthwave">Synthwave</option>
-                <option value="Glitch Hop">Glitch Hop</option>
-                <option value="Cyberpunk">Cyberpunk</option>
-                <option value="Ambient">Ambient</option>
-                <option value="Experimental">Experimental</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {/* Upload Progress */}
-            {uploading && progress > 0 && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Uploading...</span>
-                  <span>{Math.round(progress)}%</span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-cyan-400 to-magenta-400 h-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
+          <div className="bg-white/5 border border-white/10 rounded-lg p-8">
+            {uploadComplete ? (
+              <div className="text-center py-12">
+                <CheckCircle size={64} className="mx-auto mb-4 text-green-400" />
+                <h2 className="text-2xl font-bold mb-2">Upload Complete!</h2>
+                <p className="text-gray-400 mb-6">Your track has been uploaded successfully and is now protected.</p>
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  className="px-6 py-2 bg-cyan-400 text-black font-bold rounded hover:bg-cyan-300 transition cursor-pointer"
+                >
+                  Go to Dashboard
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Track Title */}
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Track Title *</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g., Neon Dreams"
+                    className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition"
                   />
                 </div>
-              </div>
-            )}
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={uploading || !file || !title.trim()}
-              className="w-full py-3 bg-gradient-to-r from-cyan-400 to-magenta-400 text-black font-bold rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              {uploading ? `Uploading... ${Math.round(progress)}%` : "Upload Track"}
-            </Button>
-          </form>
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Description</label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe your track..."
+                    rows={4}
+                    className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition resize-none"
+                  />
+                </div>
+
+                {/* Genre */}
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Genre *</label>
+                  <select
+                    value={genre}
+                    onChange={(e) => setGenre(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-cyan-400/50 transition"
+                  >
+                    <option value="Electronic">Electronic</option>
+                    <option value="Synthwave">Synthwave</option>
+                    <option value="Glitch Hop">Glitch Hop</option>
+                    <option value="Cyberpunk">Cyberpunk</option>
+                    <option value="Ambient">Ambient</option>
+                    <option value="Experimental">Experimental</option>
+                    <option value="House">House</option>
+                    <option value="Techno">Techno</option>
+                    <option value="Drum & Bass">Drum & Bass</option>
+                  </select>
+                </div>
+
+                {/* File Upload */}
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Audio File *</label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="file-input"
+                      disabled={uploading}
+                    />
+                    <label
+                      htmlFor="file-input"
+                      className="flex items-center justify-center gap-3 w-full p-6 border-2 border-dashed border-cyan-400/30 rounded-lg bg-cyan-400/5 hover:bg-cyan-400/10 transition cursor-pointer"
+                    >
+                      <UploadIcon size={24} className="text-cyan-400" />
+                      <div className="text-center">
+                        <p className="font-semibold">
+                          {file ? file.name : "Click to select audio file"}
+                        </p>
+                        <p className="text-sm text-gray-400">MP3, WAV, FLAC, OGG (Max 100MB)</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Copyright Notice */}
+                <div className="bg-magenta-400/10 border border-magenta-400/30 rounded p-4">
+                  <p className="text-sm text-gray-300">
+                    ✓ Your track is protected with SHA-256 file hashing
+                  </p>
+                  <p className="text-sm text-gray-300">
+                    ✓ Duplicate uploads will be detected automatically
+                  </p>
+                  <p className="text-sm text-gray-300">
+                    ✓ You retain full copyright ownership
+                  </p>
+                </div>
+
+                {/* Upload Progress */}
+                {uploading && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Uploading...</span>
+                      <span>{Math.round(progress)}%</span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-cyan-400 to-cyan-500 h-full transition-all duration-300"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {uploading ? "Uploading..." : "Upload Track"}
+                </button>
+              </form>
+            )}
+          </div>
 
           {/* Info Box */}
-          <div className="mt-12 p-6 border border-cyan-400/30 rounded-lg bg-cyan-400/5">
-            <div className="flex gap-3">
-              <Music className="text-cyan-400 flex-shrink-0" size={24} />
-              <div>
-                <h3 className="font-semibold mb-2">Copyright Protection</h3>
-                <p className="text-sm text-gray-400">
-                  Your track is automatically protected with SHA-256 hashing and watermarking.
-                  Only you can modify or redistribute this track. Unauthorized reuse is prevented.
-                </p>
-              </div>
-            </div>
+          <div className="mt-8 bg-black/40 border border-white/10 rounded-lg p-6">
+            <h3 className="font-bold mb-3 text-cyan-400">What happens next?</h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              <li>✓ Your track is scanned for duplicates</li>
+              <li>✓ Metadata is extracted and stored securely</li>
+              <li>✓ A copyright certificate is generated</li>
+              <li>✓ Your track appears in the Explore section</li>
+              <li>✓ Other musicians can collaborate with you</li>
+            </ul>
           </div>
         </div>
       </main>

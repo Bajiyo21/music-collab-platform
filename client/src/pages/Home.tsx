@@ -10,6 +10,13 @@ export default function Home() {
 
   const handleExplore = () => navigate("/explore");
   const handleDashboard = () => navigate("/dashboard");
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    } else {
+      startLogin();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-hidden">
@@ -91,7 +98,7 @@ export default function Home() {
             <button onClick={handleExplore} className="px-8 py-4 bg-cyan-400 text-black font-bold rounded hover:bg-cyan-300 transition-all transform hover:scale-105 cursor-pointer">
               Explore Tracks
             </button>
-            <button onClick={handleExplore} className="px-8 py-4 bg-black/40 border border-magenta-400/50 text-magenta-400 font-bold rounded hover:bg-black/60 transition-all cursor-pointer">
+            <button onClick={handleGetStarted} className="px-8 py-4 bg-black/40 border border-magenta-400/50 text-magenta-400 font-bold rounded hover:bg-black/60 transition-all cursor-pointer">
               Get Started
             </button>
           </div>

@@ -87,18 +87,17 @@ export default function Dashboard() {
             <div className="flex gap-4 flex-wrap">
               <button
                 onClick={() => navigate("/upload")}
-                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition"
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition cursor-pointer"
               >
                 <Plus size={20} />
                 Upload Track
               </button>
-              <button onClick={() => {}} className="flex items-center gap-2 px-6 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all cursor-pointer">
-                <Plus className="w-5 h-5" />
-                Upload Track
-              </button>
-              <button onClick={() => navigate("/collaborate")} className="flex items-center gap-2 px-6 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer">
+              <button
+                onClick={() => navigate("/collaborate")}
+                className="flex items-center gap-2 px-6 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer"
+              >
                 <Users className="w-5 h-5" />
-                Collaborate
+                New Collaboration
               </button>
             </div>
           </div>
