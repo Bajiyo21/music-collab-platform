@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Users, Plus, ArrowLeft, Search, Filter, Music, Clock, User } from "lucide-react";
+import { Users, Plus, ArrowLeft, Search, Music, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -16,7 +16,6 @@ interface CollaborationProject {
   status: "draft" | "in_progress" | "completed";
   createdAt: string;
   genre: string;
-  image?: string;
 }
 
 const INITIAL_PROJECTS: CollaborationProject[] = [
@@ -63,10 +62,12 @@ export default function CollaborationHub() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   
-  // Use refs to capture form values directly
-  const titleRef = useRef<HTMLInputElement>(null);
-  const descRef = useRef<HTMLTextAreaElement>(null);
-  const genreRef = useRef<HTMLSelectElement>(null);
+  // Form state
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    genre: "Electronic",
+  });
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =
@@ -81,12 +82,9 @@ export default function CollaborationHub() {
 
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Form submitted with data:", formData);
 
-    const title = titleRef.current?.value.trim() || "";
-    const description = descRef.current?.value.trim() || "";
-    const genre = genreRef.current?.value || "Electronic";
-
-    if (!title) {
+    if (!formData.title.trim()) {
       toast.error("Please enter a project title");
       return;
     }
@@ -98,24 +96,22 @@ export default function CollaborationHub() {
 
     const newProject: CollaborationProject = {
       id: Math.max(...projects.map((p) => p.id), 0) + 1,
-      title: title,
-      description: description,
+      title: formData.title.trim(),
+      description: formData.description.trim(),
       creatorName: user?.name || "Anonymous",
       creatorId: user?.id || 0,
       contributors: 1,
       status: "draft",
       createdAt: new Date().toISOString().split("T")[0],
-      genre: genre,
+      genre: formData.genre,
     };
 
+    console.log("Creating new project:", newProject);
     setProjects([newProject, ...projects]);
-    toast.success(`Project "${title}" created successfully!`);
+    toast.success(`Project "${formData.title}" created successfully!`);
     
     // Reset form
-    if (titleRef.current) titleRef.current.value = "";
-    if (descRef.current) descRef.current.value = "";
-    if (genreRef.current) genreRef.current.value = "Electronic";
-    
+    setFormData({ title: "", description: "", genre: "Electronic" });
     setShowCreateModal(false);
 
     setTimeout(() => navigate(`/collaboration/${newProject.id}`), 1000);
@@ -155,10 +151,10 @@ export default function CollaborationHub() {
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
-            <button onClick={() => navigate("/")} className="text-sm hover:text-cyan-400 transition">
+            <button onClick={() => navigate("/")} className="text-sm hover:text-cyan-400 transition cursor-pointer">
               Home
             </button>
-            <button onClick={() => navigate("/explore")} className="text-sm hover:text-cyan-400 transition">
+            <button onClick={() => navigate("/explore")} className="text-sm hover:text-cyan-400 transition cursor-pointer">
               Explore
             </button>
             <button className="text-sm text-cyan-400 font-semibold">Collaborate</button>
@@ -167,7 +163,7 @@ export default function CollaborationHub() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/")}
-              className="px-3 py-2 text-gray-400 hover:text-cyan-400 transition flex items-center gap-1"
+              className="px-3 py-2 text-gray-400 hover:text-cyan-400 transition flex items-center gap-1 cursor-pointer"
             >
               <ArrowLeft size={18} />
               <span className="hidden sm:inline text-sm">Back</span>
@@ -175,7 +171,7 @@ export default function CollaborationHub() {
             {isAuthenticated && (
               <button
                 onClick={() => navigate("/dashboard")}
-                className="px-4 py-2 text-sm bg-black/40 border border-white/10 rounded hover:bg-black/60 transition"
+                className="px-4 py-2 text-sm bg-black/40 border border-white/10 rounded hover:bg-black/60 transition cursor-pointer"
               >
                 Dashboard
               </button>
@@ -231,7 +227,7 @@ export default function CollaborationHub() {
               <button
                 key={status}
                 onClick={() => setStatusFilter(statusFilter === status ? null : status)}
-                className={`px-4 py-2 rounded border transition capitalize ${
+                className={`px-4 py-2 rounded border transition capitalize cursor-pointer ${
                   statusFilter === status
                     ? "bg-cyan-400/20 border-cyan-400/50 text-cyan-400"
                     : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
@@ -328,8 +324,9 @@ export default function CollaborationHub() {
               <div>
                 <label className="block text-sm font-semibold mb-2">Project Title *</label>
                 <input
-                  ref={titleRef}
                   type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="e.g., My Awesome Collab"
                   className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition"
                 />
@@ -339,7 +336,8 @@ export default function CollaborationHub() {
               <div>
                 <label className="block text-sm font-semibold mb-2">Description</label>
                 <textarea
-                  ref={descRef}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Describe your collaboration project..."
                   rows={3}
                   className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition resize-none"
@@ -350,8 +348,8 @@ export default function CollaborationHub() {
               <div>
                 <label className="block text-sm font-semibold mb-2">Genre</label>
                 <select
-                  ref={genreRef}
-                  defaultValue="Electronic"
+                  value={formData.genre}
+                  onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-400/50 transition"
                 >
                   <option value="Electronic">Electronic</option>

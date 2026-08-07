@@ -11,6 +11,7 @@ import CollaborationRoom from "./pages/CollaborationRoom";
 import CollaborationHub from "./pages/CollaborationHub";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
+import Playlists from "./pages/Playlists";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/collaborate" component={CollaborationHub} />
       <Route path="/profile/:userId" component={Profile} />
       <Route path="/collaboration/:collabId" component={CollaborationRoom} />
+      <Route path="/playlists" component={Playlists} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
