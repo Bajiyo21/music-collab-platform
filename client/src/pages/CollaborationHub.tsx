@@ -5,6 +5,7 @@ import { Users, Plus, ArrowLeft, Search, Music, Clock, User } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
 interface CollaborationProject {
   id: number;
@@ -68,6 +69,7 @@ export default function CollaborationHub() {
     description: "",
     genre: "Electronic",
   });
+  const createCollaboration = trpc.collaborations.create.useMutation();
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =
@@ -80,9 +82,8 @@ export default function CollaborationHub() {
     return matchesSearch && matchesStatus;
   });
 
-  const handleCreateProject = (e: React.FormEvent) => {
+  const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted with data:", formData);
 
     if (!formData.title.trim()) {
       toast.error("Please enter a project title");
@@ -94,27 +95,35 @@ export default function CollaborationHub() {
       return;
     }
 
-    const newProject: CollaborationProject = {
-      id: Math.max(...projects.map((p) => p.id), 0) + 1,
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      creatorName: user?.name || "Anonymous",
-      creatorId: user?.id || 0,
-      contributors: 1,
-      status: "draft",
-      createdAt: new Date().toISOString().split("T")[0],
-      genre: formData.genre,
-    };
+    try {
+      const result = await createCollaboration.mutateAsync({
+        title: formData.title.trim(),
+        description: formData.description.trim() || undefined,
+        visibility: "public",
+      });
+      const created = result.collaboration;
+      if (!created) throw new Error("The collaboration was not returned by the server");
 
-    console.log("Creating new project:", newProject);
-    setProjects([newProject, ...projects]);
-    toast.success(`Project "${formData.title}" created successfully!`);
-    
-    // Reset form
-    setFormData({ title: "", description: "", genre: "Electronic" });
-    setShowCreateModal(false);
+      const newProject: CollaborationProject = {
+        id: created.id,
+        title: created.title,
+        description: created.description ?? formData.description.trim(),
+        creatorName: user?.name || "Anonymous",
+        creatorId: created.creatorId,
+        contributors: 1,
+        status: created.status === "in_progress" || created.status === "completed" ? created.status : "draft",
+        createdAt: new Date(created.createdAt).toISOString().split("T")[0],
+        genre: formData.genre,
+      };
 
-    setTimeout(() => navigate(`/collaboration/${newProject.id}`), 1000);
+      setProjects((current) => [newProject, ...current]);
+      toast.success(`Project "${newProject.title}" created successfully!`);
+      setFormData({ title: "", description: "", genre: "Electronic" });
+      setShowCreateModal(false);
+      navigate(`/collaboration/${newProject.id}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not create collaboration");
+    }
   };
 
   const handleJoinProject = (projectId: number, projectTitle: string) => {
@@ -214,7 +223,8 @@ export default function CollaborationHub() {
             {/* Create Button */}
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex w-full items-center justify-center gap-2 rounded bg-gradient-to-r from-cyan-400 to-cyan-500 px-5 py-3 text-center font-bold text-black transition hover:opacity-90 cursor-pointer sm:w-auto sm:whitespace-nowrap sm:px-6"
+              disabled={createCollaboration.isPending}
+              className="flex w-full items-center justify-center gap-2 rounded bg-gradient-to-r from-cyan-400 to-cyan-500 px-5 py-3 text-center font-bold text-black transition hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:whitespace-nowrap sm:px-6"
             >
               <Plus size={20} />
               New Collaboration

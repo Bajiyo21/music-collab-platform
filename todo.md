@@ -37,10 +37,10 @@
 - [x] Run migrations and verify schema
 
 ## Phase 5: File Storage & Upload System
-- [ ] Set up S3 storage integration for audio files
+- [x] Set up S3 storage integration for audio files (server endpoint uses storagePut)
 - [ ] Set up S3 storage integration for cover art images
-- [x] Create file upload API endpoints (Upload.tsx created with working form)
-- [x] Implement audio file validation (mp3, wav, flac, aac, m4a)
+- [x] Create file upload API endpoints (authenticated multipart endpoint and Upload.tsx client flow)
+- [x] Implement audio file validation (audio MIME validation plus 100MB server limit)
 - [ ] Implement image file validation (jpg, png, webp)
 - [x] Create upload progress tracking (progress bar implemented)
 - [x] Add error handling for failed uploads (validation and error handling added)
@@ -86,7 +86,7 @@
 - [ ] Add profile view statistics
 
 ## Phase 10: Collaboration System
-- [x] Create collaboration project creation page (CollaborationHub with modal implemented)
+- [x] Create collaboration project creation page (CollaborationHub modal backed by persisted mutation)
 - [x] Implement collaboration room/project detail page (CollaborationRoom.tsx created)
 - [x] Add invite collaborators functionality (foundation ready)
 - [ ] Create invitation acceptance/rejection flow
@@ -139,11 +139,15 @@
 - [ ] Write unit tests for API procedures
 - [ ] Write component tests for key UI components
 - [ ] Test authentication flow end-to-end
-- [ ] Test file upload and storage
+- [x] Test file upload and storage helpers (TypeScript, copyright helper, endpoint, storage, and persistence metadata coverage complete)
 - [ ] Test search and filtering
 - [ ] Test collaboration invitation flow
 - [ ] Performance testing and optimization
 - [ ] Cross-browser testing
+- [x] Add a Vitest regression test for authenticated /api/upload-track success and unauthenticated rejection
+- [x] Add a server-side test covering invalid file type and duplicate hash rejection
+- [x] Add a storage/persistence test verifying fileKey, fileUrl, fileHash, mimeType, and fileSize metadata
+- [x] Restore the missing live tables required by track uploads and user profile persistence, then verify schema parity
 
 ## Phase 16: Deployment & Launch
 - [ ] Create checkpoint for production
@@ -170,3 +174,4 @@
 - [x] Add explicit mobile-responsive layout fixes to Explore.tsx (header, filters, cards, spacing, overflow)
 - [x] Add explicit mobile-responsive layout fixes to CollaborationRoom.tsx (header/actions, track panels, chat/export controls, overflow)
 - [x] Re-run phone and desktop verification after updating Explore and CollaborationRoom responsive layouts
+- [x] Clarify upload copyright copy so SHA-256 is described as exact-duplicate/integrity protection, not a legal ownership guarantee

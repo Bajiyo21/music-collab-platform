@@ -173,7 +173,7 @@ CREATE TABLE `tracks` (
 	`key` varchar(10),
 	`scale` varchar(50),
 	`mood` varchar(100),
-	`tags` json DEFAULT ('[]'),
+	`tags` json,
 	`license` enum('cc0','cc-by','cc-by-sa','cc-by-nd','cc-by-nc','cc-by-nc-sa','cc-by-nc-nd','all-rights-reserved') DEFAULT 'all-rights-reserved',
 	`visibility` enum('public','private','unlisted') DEFAULT 'public',
 	`plays` int DEFAULT 0,

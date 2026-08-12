@@ -63,43 +63,54 @@ export default function Upload() {
     setUploading(true);
     setProgress(0);
 
-    try {
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return prev;
-          }
-          return prev + Math.random() * 30;
-        });
-      }, 200);
+    const formData = new FormData();
+    formData.append("audio", file);
+    formData.append("title", title.trim());
+    formData.append("description", description.trim());
+    formData.append("genre", genre);
 
-      // Simulate upload delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/upload-track");
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        setProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    };
+    xhr.onload = () => {
+      let response: { error?: string; success?: boolean } = {};
+      try {
+        response = JSON.parse(xhr.responseText) as typeof response;
+      } catch {
+        response = {};
+      }
 
-      clearInterval(progressInterval);
-      setProgress(100);
+      if (xhr.status >= 200 && xhr.status < 300 && response.success) {
+        setProgress(100);
+        toast.success("Track uploaded successfully!");
+        setUploadComplete(true);
+        setTimeout(() => {
+          setTitle("");
+          setDescription("");
+          setGenre("Electronic");
+          setFile(null);
+          setProgress(0);
+          setUploading(false);
+          setUploadComplete(false);
+          navigate("/dashboard");
+        }, 2000);
+        return;
+      }
 
-      toast.success("Track uploaded successfully!");
-      setUploadComplete(true);
-
-      // Reset form after 2 seconds
-      setTimeout(() => {
-        setTitle("");
-        setDescription("");
-        setGenre("Electronic");
-        setFile(null);
-        setProgress(0);
-        setUploading(false);
-        setUploadComplete(false);
-        navigate("/dashboard");
-      }, 2000);
-    } catch (error) {
-      toast.error("Upload failed. Please try again.");
+      toast.error(response.error || "Upload failed. Please try again.");
       setUploading(false);
       setProgress(0);
-    }
+    };
+    xhr.onerror = () => {
+      toast.error("Upload failed. Check your connection and try again.");
+      setUploading(false);
+      setProgress(0);
+    };
+    xhr.send(formData);
   };
 
   return (
@@ -133,7 +144,7 @@ export default function Upload() {
               <span className="neon-magenta">TRACK</span>
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-gray-400 sm:text-lg">
-              Share your music with the world. Your track will be protected with copyright verification.
+              Share your music with the world. Your track receives an exact-file fingerprint for duplicate and integrity checks.
             </p>
           </div>
 
@@ -143,7 +154,7 @@ export default function Upload() {
               <div className="text-center py-12">
                 <CheckCircle size={64} className="mx-auto mb-4 text-green-400" />
                 <h2 className="text-2xl font-bold mb-2">Upload Complete!</h2>
-                <p className="text-gray-400 mb-6">Your track has been uploaded successfully and is now protected.</p>
+                <p className="text-gray-400 mb-6">Your track has been uploaded successfully and its exact-file fingerprint is recorded.</p>
                 <button
                   onClick={() => navigate("/dashboard")}
                   className="px-6 py-2 bg-cyan-400 text-black font-bold rounded hover:bg-cyan-300 transition cursor-pointer"
@@ -227,13 +238,13 @@ export default function Upload() {
                 {/* Copyright Notice */}
                 <div className="rounded border border-magenta-400/30 bg-magenta-400/10 p-3 sm:p-4">
                   <p className="text-sm text-gray-300">
-                    ✓ Your track is protected with SHA-256 file hashing
+                    ✓ SHA-256 fingerprinting checks exact duplicates and file integrity
                   </p>
                   <p className="text-sm text-gray-300">
                     ✓ Duplicate uploads will be detected automatically
                   </p>
                   <p className="text-sm text-gray-300">
-                    ✓ You retain full copyright ownership
+                    ✓ Upload only music you own or are licensed to share
                   </p>
                 </div>
 
@@ -271,7 +282,7 @@ export default function Upload() {
             <ul className="space-y-2 text-sm text-gray-400">
               <li>✓ Your track is scanned for duplicates</li>
               <li>✓ Metadata is extracted and stored securely</li>
-              <li>✓ A copyright certificate is generated</li>
+              <li>✓ A fingerprint record is stored with the upload metadata</li>
               <li>✓ Your track appears in the Explore section</li>
               <li>✓ Other musicians can collaborate with you</li>
             </ul>

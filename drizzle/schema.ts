@@ -139,6 +139,9 @@ export const tracks = mysqlTable(
     description: longtext("description"),
     fileKey: varchar("fileKey", { length: 512 }).notNull(),
     fileUrl: varchar("fileUrl", { length: 1024 }).notNull(),
+    fileHash: varchar("fileHash", { length: 64 }),
+    mimeType: varchar("mimeType", { length: 128 }),
+    fileSize: int("fileSize"),
     coverArtKey: varchar("coverArtKey", { length: 512 }),
     coverArtUrl: varchar("coverArtUrl", { length: 1024 }),
     duration: int("duration"), // in seconds
@@ -148,7 +151,8 @@ export const tracks = mysqlTable(
     key: varchar("key", { length: 10 }),
     scale: varchar("scale", { length: 50 }),
     mood: varchar("mood", { length: 100 }),
-    tags: json("tags").$type<string[]>().default([]),
+    // TiDB does not accept a JSON array expression as a column default; writes provide [] explicitly.
+    tags: json("tags").$type<string[]>(),
     license: mysqlEnum("license", ["cc0", "cc-by", "cc-by-sa", "cc-by-nd", "cc-by-nc", "cc-by-nc-sa", "cc-by-nc-nd", "all-rights-reserved"]).default("all-rights-reserved"),
     visibility: mysqlEnum("visibility", ["public", "private", "unlisted"]).default("public"),
     plays: int("plays").default(0),

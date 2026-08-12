@@ -19,6 +19,8 @@ import {
   getAllGenres,
   getAllInstruments,
   getUserProfile,
+  findTrackByHash,
+  createCollaborationRecord,
 } from "./db";
 import { z } from "zod";
 
@@ -77,22 +79,13 @@ export const appRouter = router({
         return await getTrackComments(input.trackId);
       }),
 
-    // Placeholder for upload - will integrate with file storage
-    upload: protectedProcedure
-      .input(
-        z.object({
-          title: z.string(),
-          description: z.string().optional(),
-          genre: z.string().optional(),
-          tags: z.array(z.string()).default([]),
-        })
-      )
-      .mutation(async ({ input, ctx }) => {
-        // TODO: Implement file upload with S3 and AI metadata generation
-        return {
-          success: true,
-          message: "Track upload endpoint ready for implementation",
-        };
+    duplicateByHash: protectedProcedure
+      .input(z.object({ fileHash: z.string().length(64) }))
+      .query(async ({ input }) => {
+        const existing = await findTrackByHash(input.fileHash);
+        return existing
+          ? { isDuplicate: true, trackId: existing.id, title: existing.title }
+          : { isDuplicate: false };
       }),
   }),
 
@@ -119,17 +112,19 @@ export const appRouter = router({
     create: protectedProcedure
       .input(
         z.object({
-          title: z.string(),
-          description: z.string().optional(),
+          title: z.string().trim().min(1).max(255),
+          description: z.string().trim().max(5000).optional(),
           visibility: z.enum(["public", "private", "invited"]).default("private"),
         })
       )
       .mutation(async ({ input, ctx }) => {
-        // TODO: Implement collaboration creation
-        return {
-          success: true,
-          message: "Collaboration creation endpoint ready for implementation",
-        };
+        const collaboration = await createCollaborationRecord({
+          creatorId: ctx.user.id,
+          title: input.title,
+          description: input.description,
+          visibility: input.visibility,
+        });
+        return { success: true, collaboration };
       }),
 
     invite: protectedProcedure

@@ -15,6 +15,20 @@
       "when": 1784815687222,
       "tag": "0001_free_secret_warriors",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786513468034,
+      "tag": "0002_left_loa",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1786514572316,
+      "tag": "0003_robust_harry_osborn",
+      "breakpoints": true
     }
   ]
 }

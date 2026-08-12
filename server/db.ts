@@ -321,6 +321,90 @@ export async function getUnreadNotificationCount(userId: number) {
 }
 
 // ============================================
+// PERSISTED CREATION & COPYRIGHT HELPERS
+// ============================================
+
+export async function findTrackByHash(fileHash: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(tracks)
+    .where(eq(tracks.fileHash, fileHash))
+    .limit(1);
+
+  return result[0];
+}
+
+export async function createTrackRecord(input: {
+  creatorId: number;
+  title: string;
+  description?: string;
+  fileKey: string;
+  fileUrl: string;
+  fileHash: string;
+  mimeType: string;
+  fileSize: number;
+  tags?: string[];
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+
+  const result = await db.insert(tracks).values({
+    creatorId: input.creatorId,
+    title: input.title,
+    description: input.description ?? null,
+    fileKey: input.fileKey,
+    fileUrl: input.fileUrl,
+    fileHash: input.fileHash,
+    mimeType: input.mimeType,
+    fileSize: input.fileSize,
+    tags: input.tags ?? [],
+    license: "all-rights-reserved",
+    visibility: "public",
+  });
+
+  const insertId = Number((result as any).insertId ?? (result as any)[0]?.insertId);
+  if (!Number.isFinite(insertId) || insertId <= 0) {
+    throw new Error("Track was uploaded but its database id could not be read");
+  }
+
+  return getTrackById(insertId);
+}
+
+export async function createCollaborationRecord(input: {
+  creatorId: number;
+  title: string;
+  description?: string;
+  visibility: "public" | "private" | "invited";
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+
+  const result = await db.insert(collaborations).values({
+    creatorId: input.creatorId,
+    title: input.title,
+    description: input.description ?? null,
+    visibility: input.visibility,
+    status: "draft",
+  });
+
+  const insertId = Number((result as any).insertId ?? (result as any)[0]?.insertId);
+  if (!Number.isFinite(insertId) || insertId <= 0) {
+    throw new Error("Collaboration was created but its database id could not be read");
+  }
+
+  await db.insert(collaborationContributors).values({
+    collaborationId: insertId,
+    userId: input.creatorId,
+    role: "owner",
+  });
+
+  return getCollaborationById(insertId);
+}
+
+// ============================================
 // REFERENCE DATA
 // ============================================
 

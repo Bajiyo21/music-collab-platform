@@ -11,7 +11,8 @@
  */
 
 import crypto from "crypto";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { tracks } from "../drizzle/schema";
 import { getDb } from "./db";
 
 /**
@@ -62,9 +63,12 @@ export async function verifyTrackOwnership(
   if (!db) return false;
 
   try {
-    // Query would be: SELECT owner_id FROM tracks WHERE id = ? AND owner_id = ?
-    // This ensures user is the original owner
-    return true; // Placeholder - implement with actual DB query
+    const result = await db
+      .select({ id: tracks.id })
+      .from(tracks)
+      .where(and(eq(tracks.id, trackId), eq(tracks.creatorId, userId)))
+      .limit(1);
+    return result.length > 0;
   } catch (error) {
     console.error("[Security] Track ownership verification failed:", error);
     return false;
@@ -144,9 +148,12 @@ export async function checkDuplicateTrack(fileHash: string): Promise<number | nu
   if (!db) return null;
 
   try {
-    // Query would be: SELECT id FROM tracks WHERE file_hash = ? LIMIT 1
-    // If found, returns original track ID
-    return null; // Placeholder
+    const result = await db
+      .select({ id: tracks.id })
+      .from(tracks)
+      .where(eq(tracks.fileHash, fileHash))
+      .limit(1);
+    return result[0]?.id ?? null;
   } catch (error) {
     console.error("[Security] Duplicate check failed:", error);
     return null;
