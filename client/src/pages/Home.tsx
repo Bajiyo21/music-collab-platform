@@ -23,9 +23,9 @@ export default function Home() {
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-md">
         <div className="container flex min-h-16 flex-wrap items-center justify-between gap-2 px-4 py-3 sm:h-16 sm:flex-nowrap sm:py-0">
-          <div className="flex items-center gap-2">
-            <div className="text-2xl font-bold neon-cyan">♪</div>
-            <span className="text-xl font-bold tracking-wider">TuneCollab</span>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-400 to-magenta-500 flex items-center justify-center font-bold text-black text-sm">♪</div>
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-cyan-200 to-cyan-400 bg-clip-text text-transparent">TuneCollab</span>
           </div>
 
           <nav className="hidden items-center gap-8 md:flex">
