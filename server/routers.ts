@@ -1,5 +1,6 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { invokeLLM } from "./_core/llm";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import {
@@ -340,6 +341,70 @@ export const appRouter = router({
     followers: publicProcedure
       .input(z.object({ userId: z.number() }))
       .query(async ({ input }) => getUserFollowers(input.userId)),
+  }),
+
+  // ============================================
+  // AI MUSIC STUDIO & CHAT ASSISTANT
+  // ============================================
+  aiStudio: router({
+    analyze: protectedProcedure
+      .input(z.object({ trackId: z.number().optional(), lyrics: z.string().max(10000).optional(), prompt: z.string().max(2000).optional() }))
+      .mutation(async ({ input }) => {
+        const systemPrompt = "You are an elite AI music producer, mixing engineer, and lyricist for TuneCollab, a retro-futuristic music platform. Analyze the provided lyrics, track info, or musical concept and return a structured JSON response with keys: 'genre' (string), 'mood' (string), 'tempoRecommendation' (string), 'chordProgression' (string), 'lyricSuggestions' (array of strings), 'instrumentation' (array of strings), 'productionTips' (array of strings), and 'summary' (string).";
+        const userContent = `Analyze this music project:\nLyrics/Concept: ${input.lyrics || "None provided"}\nCustom Prompt/Instructions: ${input.prompt || "Produce a professional retro-futuristic track suggestion."}`;
+        const res = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userContent },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "music_analysis",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  genre: { type: "string" },
+                  mood: { type: "string" },
+                  tempoRecommendation: { type: "string" },
+                  chordProgression: { type: "string" },
+                  lyricSuggestions: { type: "array", items: { type: "string" } },
+                  instrumentation: { type: "array", items: { type: "string" } },
+                  productionTips: { type: "array", items: { type: "string" } },
+                  summary: { type: "string" },
+                },
+                required: ["genre", "mood", "tempoRecommendation", "chordProgression", "lyricSuggestions", "instrumentation", "productionTips", "summary"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        const content = typeof res.choices[0].message.content === "string" ? res.choices[0].message.content : JSON.stringify(res.choices[0].message.content);
+        try {
+          return JSON.parse(content);
+        } catch {
+          return {
+            genre: "Synthwave / Electronic",
+            mood: "Retro-futuristic & Energetic",
+            tempoRecommendation: "120 BPM",
+            chordProgression: "Am - F - C - G",
+            lyricSuggestions: ["Neon lights flicker through the data stream", "Chasing shadows in the cyberpunk night"],
+            instrumentation: ["Analog Synth Leads", "80s Drum Machine", "Lofi Bass"],
+            productionTips: ["Add sidechain compression to the synth pad", "Use tape saturation on the vocals"],
+            summary: content,
+          };
+        }
+      }),
+
+    chat: protectedProcedure
+      .input(z.object({ messages: z.array(z.object({ role: z.enum(["system", "user", "assistant"]), content: z.string() })) }))
+      .mutation(async ({ input }) => {
+        const systemMessage = { role: "system", content: "You are 'TuneAI', an expert AI music collaboration assistant on TuneCollab. Help musicians refine their lyrics, choose chord progressions, design synth patches, arrange stems, and write generation prompts. Keep answers concise, inspiring, and professional." };
+        const fullMessages = [systemMessage, ...input.messages] as Array<{ role: "system" | "user" | "assistant"; content: string }>;
+        const res = await invokeLLM({ messages: fullMessages });
+        return { response: res.choices[0].message.content || "Keep the rhythm flowing!" };
+      }),
   }),
 
   // ============================================

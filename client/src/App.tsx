@@ -19,6 +19,7 @@ import Playlists from "./pages/Playlists";
 import PlaylistDetail from "./pages/PlaylistDetail";
 import TrackDetail from "./pages/TrackDetail";
 import Notifications from "./pages/Notifications";
+import AiStudio from "./pages/AiStudio";
 
 function OnboardingRedirect() {
   const { user, loading } = useAuth();
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/playlist/:playlistId" component={PlaylistDetail} />
       <Route path="/track/:trackId" component={TrackDetail} />
       <Route path="/notifications" component={Notifications} />
+      <Route path="/ai-studio" component={AiStudio} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
