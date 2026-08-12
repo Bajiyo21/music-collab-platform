@@ -210,3 +210,9 @@
 - [x] Update global theme tokens in `client/src/index.css` to match the professional reference aesthetic
 - [x] Redesign Home landing page and navigation to mirror the clean, modern structure of the reference
 - [x] Verify responsive layouts on desktop and mobile viewports, run tests, and save checkpoint
+
+## Phase 21: AI Studio Upload Customization & Smooth Feed Transitions
+- [x] Fix AiStudio.tsx duplicate useState import/pre-transform error
+- [x] Implement explicit loading skeleton and smooth transition UX when switching dashboard tabs
+- [x] Run pnpm test and pnpm build successfully
+- [x] Save final production checkpoint

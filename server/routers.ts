@@ -405,6 +405,69 @@ export const appRouter = router({
         const res = await invokeLLM({ messages: fullMessages });
         return { response: res.choices[0].message.content || "Keep the rhythm flowing!" };
       }),
+
+    generateLyrics: protectedProcedure
+      .input(z.object({ genre: z.string(), mood: z.string(), theme: z.string().optional() }))
+      .mutation(async ({ input }) => {
+        const prompt = `Write professional, evocative song lyrics for a ${input.genre} track with a ${input.mood} mood${input.theme ? ` about "${input.theme}"` : ""}. Include Verse 1, Chorus, Verse 2, and Bridge. Return the lyrics cleanly formatted in Markdown.`;
+        const res = await invokeLLM({
+          messages: [
+            { role: "system", content: "You are an elite professional lyricist and songwriter." },
+            { role: "user", content: prompt },
+          ],
+        });
+        const lyrics = typeof res.choices[0].message.content === "string" ? res.choices[0].message.content : JSON.stringify(res.choices[0].message.content);
+        return { lyrics };
+      }),
+
+    customizeTrack: protectedProcedure
+      .input(z.object({ trackName: z.string(), genre: z.string(), notes: z.string().optional(), audioUrl: z.string().optional() }))
+      .mutation(async ({ input }) => {
+        const prompt = `An artist uploaded an audio track titled "${input.trackName}" in genre "${input.genre}"${input.audioUrl ? ` (Audio asset URL: ${input.audioUrl})` : ""} with custom notes: "${input.notes || "None"}". Act as the TuneAI Master Producer. Analyze this uploaded track's conceptual style, vibe, and notes, and design a completely customized, upgraded new track concept derived directly from it. Return a JSON response with keys: 'newTrackTitle' (string), 'genre' (string), 'bpm' (string), 'key' (string), 'arrangements' (array of strings), 'newInstrumentStems' (array of strings), 'mixingRecommendations' (array of strings), and 'conceptStory' (string).`;
+        const res = await invokeLLM({
+          messages: [
+            { role: "system", content: "You are TuneAI, a master AI music producer. Return valid JSON matching the requested track customization structure." },
+            { role: "user", content: prompt },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "track_customization",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  newTrackTitle: { type: "string" },
+                  genre: { type: "string" },
+                  bpm: { type: "string" },
+                  key: { type: "string" },
+                  arrangements: { type: "array", items: { type: "string" } },
+                  newInstrumentStems: { type: "array", items: { type: "string" } },
+                  mixingRecommendations: { type: "array", items: { type: "string" } },
+                  conceptStory: { type: "string" },
+                },
+                required: ["newTrackTitle", "genre", "bpm", "key", "arrangements", "newInstrumentStems", "mixingRecommendations", "conceptStory"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        const content = typeof res.choices[0].message.content === "string" ? res.choices[0].message.content : JSON.stringify(res.choices[0].message.content);
+        try {
+          return JSON.parse(content);
+        } catch {
+          return {
+            newTrackTitle: `${input.trackName} (TuneAI VIP Remix)`,
+            genre: input.genre || "Electronic Synthwave",
+            bpm: "124 BPM",
+            key: "F Minor",
+            arrangements: ["Intro sweep", "Driving bassline verse", "Anthemic chorus drop"],
+            newInstrumentStems: ["Arpeggiated pluck synth", "Punchy 808 kick", "Atmospheric vocal chops"],
+            mixingRecommendations: ["Apply sidechain compression", "Enhance stereo width on the lead synth"],
+            conceptStory: content,
+          };
+        }
+      }),
   }),
 
   // ============================================
