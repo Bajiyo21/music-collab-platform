@@ -115,20 +115,7 @@ export default function Home() {
             <span>System Online • Ready to Collaborate</span>
           </div>
 
-          {/* Cover Art Banner */}
-          <div className="relative overflow-hidden rounded-xl border border-cyan-400/30 shadow-2xl bg-black/60 aspect-[16/9] max-w-3xl mx-auto flex items-center justify-center">
-            <img 
-              src="/manus-storage/tunecollab-cover_98725fc4.png" 
-              alt="TuneCollab Cyberpunk Cover Art" 
-              className="absolute inset-0 h-full w-full object-cover opacity-90 transition-transform duration-700 hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-6">
-              <div className="text-left">
-                <span className="text-xs uppercase tracking-widest text-cyan-300 font-mono">Official Cover Visual</span>
-                <h3 className="text-xl font-extrabold tracking-tight text-white">Cybernetic Soundwaves & Studio Ecosystem</h3>
-              </div>
-            </div>
-          </div>
+          {/* Cover Art Banner Removed */}
         </div>
 
         {/* Floating Notes */}

@@ -216,3 +216,8 @@
 - [x] Implement explicit loading skeleton and smooth transition UX when switching dashboard tabs
 - [x] Run pnpm test and pnpm build successfully
 - [x] Save final production checkpoint
+
+## Phase 22: Remove Cover Image Section
+- [x] Remove the cover image / showcase card from `client/src/pages/Home.tsx`
+- [x] Verify test suite and build compilation pass successfully
+- [x] Save updated production checkpoint
