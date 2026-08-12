@@ -161,3 +161,12 @@
 - Responsive design for all screen sizes
 - AI metadata generation for uploaded tracks
 - Real-time notifications for collaboration and social interactions
+
+- [x] Improve mobile responsiveness on Collaboration Hub (prevent heading overflow, stack controls, and make project cards fit narrow screens)
+- [x] Improve mobile responsiveness on Upload page (stack form controls and keep file upload UI within viewport)
+- [x] Improve mobile responsiveness on shared headers and primary routes (Home, Explore, Dashboard, Collaboration Room)
+- [x] Verify responsive behavior at phone and desktop viewports
+
+- [x] Add explicit mobile-responsive layout fixes to Explore.tsx (header, filters, cards, spacing, overflow)
+- [x] Add explicit mobile-responsive layout fixes to CollaborationRoom.tsx (header/actions, track panels, chat/export controls, overflow)
+- [x] Re-run phone and desktop verification after updating Explore and CollaborationRoom responsive layouts

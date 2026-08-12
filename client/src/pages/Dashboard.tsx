@@ -41,7 +41,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-md">
-        <div className="container flex items-center justify-between h-16 px-4">
+        <div className="container flex min-h-16 flex-wrap items-center justify-between gap-2 px-4 py-3 sm:h-16 sm:flex-nowrap sm:py-0">
           <button onClick={() => navigate("/")} className="flex items-center gap-2 hover:opacity-80 transition">
             <div className="text-2xl font-bold neon-cyan">♪</div>
             <span className="text-xl font-bold tracking-wider">TuneCollab</span>
@@ -57,7 +57,7 @@ export default function Dashboard() {
             <button className="text-sm text-cyan-400 font-semibold">Dashboard</button>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 sm:gap-4">
             <button
               onClick={() => navigate("/")}
               className="px-3 py-2 text-gray-400 hover:text-cyan-400 transition flex items-center gap-1"
@@ -78,23 +78,23 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-24 pb-12 px-4">
+      <main className="px-4 pb-12 pt-24 sm:px-6">
         <div className="container max-w-6xl mx-auto">
           {/* Welcome Section */}
-          <div className="mb-12 bg-gradient-to-r from-cyan-500/10 to-magenta-500/10 rounded-lg p-8 border border-white/10">
-            <h1 className="text-4xl font-bold mb-2">Welcome back, {user?.name}!</h1>
+          <div className="mb-8 rounded-lg border border-white/10 bg-gradient-to-r from-cyan-500/10 to-magenta-500/10 p-4 sm:mb-12 sm:p-8">
+            <h1 className="safe-wrap mb-2 text-3xl font-bold leading-tight sm:text-4xl">Welcome back, {user?.name}!</h1>
             <p className="text-muted-foreground mb-6">Ready to create something amazing?</p>
-            <div className="flex gap-4 flex-wrap">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
               <button
                 onClick={() => navigate("/upload")}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition cursor-pointer"
+                className="flex w-full items-center justify-center gap-2 rounded bg-gradient-to-r from-cyan-400 to-cyan-500 px-5 py-3 text-center font-bold text-black transition hover:opacity-90 cursor-pointer sm:w-auto sm:px-6"
               >
                 <Plus size={20} />
                 Upload Track
               </button>
               <button
                 onClick={() => navigate("/collaborate")}
-                className="flex items-center gap-2 px-6 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer"
+                className="flex w-full items-center justify-center gap-2 rounded border border-magenta-400/50 bg-magenta-400/20 px-5 py-3 text-center font-semibold text-magenta-400 transition-all hover:bg-magenta-400/30 cursor-pointer sm:w-auto sm:px-6"
               >
                 <Users className="w-5 h-5" />
                 New Collaboration
@@ -103,7 +103,7 @@ export default function Dashboard() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mb-12 md:grid-cols-4 md:gap-6">
             <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-6 hover:border-cyan-400/50 transition-all">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-muted-foreground text-sm">Total Tracks</span>
@@ -142,8 +142,8 @@ export default function Dashboard() {
           </div>
 
           {/* Tabs */}
-          <div className="mb-8 border-b border-white/10">
-            <div className="flex gap-8">
+          <div className="mb-8 overflow-x-auto border-b border-white/10">
+            <div className="flex min-w-max gap-6 sm:gap-8">
               {["overview", "tracks", "collaborations", "playlists"].map((tab) => (
                 <button
                   key={tab}
@@ -174,7 +174,7 @@ export default function Dashboard() {
 
                 <div className="space-y-4">
                   {MOCK_RECENT_TRACKS.map((track) => (
-                    <div key={track.id} className="flex items-center justify-between p-4 bg-black/20 rounded hover:bg-black/40 transition-all">
+                    <div key={track.id} className="flex flex-col items-stretch gap-3 rounded bg-black/20 p-4 transition-all hover:bg-black/40 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-center gap-4 flex-1">
                         <div className="w-12 h-12 rounded bg-gradient-to-br from-cyan-500/20 to-magenta-500/20 flex items-center justify-center flex-shrink-0">
                           <Music className="w-6 h-6 text-cyan-400" />
@@ -184,7 +184,7 @@ export default function Dashboard() {
                           <p className="text-xs text-muted-foreground">{track.genre}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground sm:gap-6">
                         <span>▶ {track.plays}</span>
                         <span>❤ {track.likes}</span>
                       </div>
@@ -197,15 +197,15 @@ export default function Dashboard() {
               <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-6 h-fit">
                 <h3 className="text-lg font-bold mb-6">Quick Actions</h3>
                 <div className="space-y-3">
-                  <button onClick={() => {}} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all cursor-pointer">
+                  <button onClick={() => navigate("/upload")} className="flex w-full items-center justify-center gap-2 rounded border border-cyan-400/50 bg-cyan-400/20 px-4 py-3 font-semibold text-cyan-400 transition-all hover:bg-cyan-400/30 cursor-pointer">
                     <Plus className="w-4 h-4" />
                     New Track
                   </button>
-                  <button onClick={() => {}} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer">
+                  <button onClick={() => navigate("/collaborate")} className="flex w-full items-center justify-center gap-2 rounded border border-magenta-400/50 bg-magenta-400/20 px-4 py-3 font-semibold text-magenta-400 transition-all hover:bg-magenta-400/30 cursor-pointer">
                     <Users className="w-4 h-4" />
                     New Collab
                   </button>
-                  <button onClick={() => {}} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black/40 border border-white/10 hover:bg-black/60 rounded font-semibold transition-all cursor-pointer">
+                  <button onClick={() => navigate("/playlists")} className="flex w-full items-center justify-center gap-2 rounded border border-white/10 bg-black/40 px-4 py-3 font-semibold transition-all hover:bg-black/60 cursor-pointer">
                     <Music className="w-4 h-4" />
                     New Playlist
                   </button>

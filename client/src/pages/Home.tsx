@@ -22,13 +22,13 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground overflow-hidden">
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-md">
-        <div className="container flex items-center justify-between h-16 px-4">
+        <div className="container flex min-h-16 flex-wrap items-center justify-between gap-2 px-4 py-3 sm:h-16 sm:flex-nowrap sm:py-0">
           <div className="flex items-center gap-2">
             <div className="text-2xl font-bold neon-cyan">♪</div>
             <span className="text-xl font-bold tracking-wider">TuneCollab</span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden items-center gap-8 md:flex">
             <button onClick={handleExplore} className="text-sm hover:text-cyan-400 transition">
               Explore
             </button>
@@ -40,7 +40,13 @@ export default function Home() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <nav className="order-3 flex w-full items-center justify-center gap-5 border-t border-white/10 pt-2 md:hidden">
+            <button onClick={handleExplore} className="text-xs text-muted-foreground transition hover:text-cyan-400">Explore</button>
+            <a href="#features" className="text-xs text-muted-foreground transition hover:text-cyan-400">Features</a>
+            <a href="#about" className="text-xs text-muted-foreground transition hover:text-cyan-400">About</a>
+          </nav>
+
+          <div className="flex items-center gap-2 sm:gap-4">
             {isAuthenticated ? (
               <>
                 <span className="text-sm text-muted-foreground hidden sm:inline">{user?.name}</span>
@@ -58,28 +64,28 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 relative">
+      <section className="relative px-4 pb-16 pt-36 sm:pb-20 sm:pt-32">
         <div className="container max-w-4xl mx-auto text-center">
           {/* Error Code Badge */}
-          <div className="inline-block mb-8 px-4 py-2 bg-black/40 border border-cyan-400/30 rounded text-xs font-mono text-cyan-400">
+          <div className="mb-6 inline-block max-w-full rounded border border-cyan-400/30 bg-black/40 px-3 py-2 text-center text-[0.65rem] font-mono text-cyan-400 sm:mb-8 sm:px-4 sm:text-xs">
             [ SYSTEM_INIT.MUSIC.COLLAB_v1.0 ]
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight">
+          <h1 className="mb-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-4xl font-black leading-tight tracking-tight sm:text-5xl md:mb-6 md:text-7xl">
             <span className="neon-cyan">TUNE</span>
             <span className="mx-2">×</span>
             <span className="neon-magenta">COLLAB</span>
           </h1>
 
           {/* Subheading */}
-          <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
+          <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-muted-foreground sm:mb-12 sm:text-xl">
             Immerse yourself in a retro-futuristic music collaboration platform. Create, discover, and collaborate with musicians worldwide.
           </p>
 
           {/* Waveform Visualizer */}
-          <div className="mb-12 h-24 bg-gradient-to-b from-cyan-500/20 to-transparent rounded-lg border border-cyan-400/30 flex items-center justify-center overflow-hidden">
-            <div className="flex items-end justify-center gap-1 h-16 w-full">
+          <div className="mb-8 flex h-20 items-center justify-center overflow-hidden rounded-lg border border-cyan-400/30 bg-gradient-to-b from-cyan-500/20 to-transparent sm:mb-12 sm:h-24">
+            <div className="flex h-12 w-full items-end justify-center gap-0.5 px-2 sm:h-16 sm:gap-1">
               {Array.from({ length: 40 }).map((_, i) => (
                 <div
                   key={i}
@@ -104,7 +110,7 @@ export default function Home() {
           </div>
 
           {/* Status */}
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-center text-xs text-muted-foreground sm:text-sm">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
             <span>System Online • Ready to Collaborate</span>
           </div>
@@ -154,7 +160,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="py-8 px-4 border-t border-white/10 bg-black/40">
-        <div className="container max-w-5xl mx-auto text-center text-sm text-muted-foreground">
+        <div className="container mx-auto max-w-5xl text-center text-xs leading-relaxed text-muted-foreground sm:text-sm">
           <p>© 2026 TuneCollab. All rights reserved. | Retro-Futuristic Music Platform</p>
         </div>
       </footer>

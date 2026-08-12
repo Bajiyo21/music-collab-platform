@@ -164,23 +164,23 @@ export default function CollaborationRoom() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-40 border-b border-white/10 bg-black/40 backdrop-blur-md">
-        <div className="container flex items-center justify-between h-16 px-4">
+        <div className="container flex items-center justify-between h-16 px-3 sm:px-4 gap-2">
           <button onClick={() => navigate("/collaborate")} className="flex items-center gap-2 hover:opacity-80 transition">
             <div className="text-2xl font-bold neon-cyan">♪</div>
-            <span className="text-lg font-bold tracking-wider">TuneCollab</span>
+            <span className="text-base sm:text-lg font-bold tracking-wider">TuneCollab</span>
           </button>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={() => setShowChat(!showChat)}
-              className="px-4 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition flex items-center gap-2"
+              className="px-2 sm:px-4 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
             >
               <MessageSquare size={18} />
               Chat
             </button>
             <button
               onClick={() => setShowExportModal(true)}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition flex items-center gap-2"
+              className="px-2 sm:px-4 py-2 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
             >
               <Download size={18} />
               Export
@@ -190,18 +190,18 @@ export default function CollaborationRoom() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-20 pb-12 px-4">
+      <main className="pt-20 sm:pt-24 pb-10 sm:pb-12 px-3 sm:px-4">
         <div className="container max-w-7xl mx-auto">
           {/* Project Header */}
-          <div className="mb-8 p-6 border border-white/10 rounded-lg bg-white/5">
-            <div className="flex items-start justify-between mb-2">
-              <h1 className="text-3xl font-bold">{project.title}</h1>
+          <div className="mb-6 sm:mb-8 p-4 sm:p-6 border border-white/10 rounded-lg bg-white/5 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold leading-tight break-words">{project.title}</h1>
               <span className="px-3 py-1 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded text-sm font-semibold">
                 {project.status.replace("_", " ")}
               </span>
             </div>
             <p className="text-gray-400 mb-3">{project.description}</p>
-            <div className="flex gap-6 text-sm text-gray-400">
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-400">
               <span>Created by {project.creatorName}</span>
               <span>{project.contributors} contributors</span>
               <span>Started {project.createdAt}</span>
@@ -213,8 +213,8 @@ export default function CollaborationRoom() {
             {/* Layers Panel */}
             <div className="lg:col-span-2 space-y-6">
               {/* Layers Section */}
-              <div className="border border-white/10 rounded-lg p-6 bg-white/5">
-                <div className="flex items-center justify-between mb-4">
+              <div className="border border-white/10 rounded-lg p-4 sm:p-6 bg-white/5 min-w-0">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                   <h2 className="text-xl font-bold flex items-center gap-2">
                     <Music size={20} />
                     Layers
@@ -230,7 +230,7 @@ export default function CollaborationRoom() {
                     <div
                       key={layer.id}
                       onClick={() => setSelectedLayer(layer.id)}
-                      className={`p-4 rounded border transition cursor-pointer flex items-center justify-between ${
+                      className={`p-3 sm:p-4 rounded border transition cursor-pointer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
                         selectedLayer === layer.id
                           ? "bg-cyan-400/20 border-cyan-400/50"
                           : "bg-white/5 border-white/10 hover:bg-white/10"
@@ -241,7 +241,7 @@ export default function CollaborationRoom() {
                         <p className="text-sm text-gray-400">{layer.artistName}</p>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 self-end sm:self-auto">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -270,7 +270,7 @@ export default function CollaborationRoom() {
 
               {/* Layer Controls */}
               {selectedLayerData && (
-                <div className="border border-white/10 rounded-lg p-6 bg-white/5">
+                <div className="border border-white/10 rounded-lg p-4 sm:p-6 bg-white/5 min-w-0">
                   <h3 className="text-lg font-bold mb-6">Layer Controls: {selectedLayerData.trackTitle}</h3>
 
                   <div className="space-y-6">
@@ -321,7 +321,7 @@ export default function CollaborationRoom() {
             {/* Right Sidebar */}
             <div className="space-y-6">
               {/* Comments Panel */}
-              <div className="border border-white/10 rounded-lg p-6 bg-white/5">
+              <div className="border border-white/10 rounded-lg p-4 sm:p-6 bg-white/5 min-w-0">
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                   <MessageSquare size={20} />
                   Comments
@@ -339,7 +339,7 @@ export default function CollaborationRoom() {
               </div>
 
               {/* Project Info */}
-              <div className="border border-white/10 rounded-lg p-6 bg-white/5">
+              <div className="border border-white/10 rounded-lg p-4 sm:p-6 bg-white/5 min-w-0">
                 <h3 className="text-lg font-bold mb-4">Project Info</h3>
                 <div className="space-y-3 text-sm">
                   <div>
@@ -363,7 +363,7 @@ export default function CollaborationRoom() {
 
       {/* Chat Panel */}
       {showChat && (
-        <div className="fixed right-0 bottom-0 w-96 h-96 bg-background border-l border-t border-white/10 rounded-tl-lg flex flex-col z-30">
+        <div className="fixed inset-x-2 bottom-2 sm:inset-x-auto sm:right-0 sm:bottom-0 w-auto sm:w-96 h-[min(24rem,70vh)] bg-background border border-white/10 sm:border-l sm:border-t rounded-lg sm:rounded-tl-lg sm:rounded-tr-none sm:rounded-bl-none sm:rounded-br-none flex flex-col z-30">
           <div className="p-4 border-b border-white/10 flex items-center justify-between">
             <h3 className="font-bold flex items-center gap-2">
               <MessageSquare size={18} />
@@ -408,7 +408,7 @@ export default function CollaborationRoom() {
       {/* Export Modal */}
       {showExportModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-background border border-white/10 rounded-lg p-8 max-w-md w-full">
+          <div className="bg-background border border-white/10 rounded-lg p-4 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6">
               <span className="neon-cyan">EXPORT</span>
               <span className="text-white mx-2">×</span>
@@ -451,7 +451,7 @@ export default function CollaborationRoom() {
       {/* Preview Modal */}
       {showPreview && previewingLayer && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-background border border-white/10 rounded-lg p-8 max-w-md w-full">
+          <div className="bg-background border border-white/10 rounded-lg p-4 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">Now Playing</h2>
               <button onClick={() => setShowPreview(false)} className="p-1 hover:bg-white/10 rounded transition">

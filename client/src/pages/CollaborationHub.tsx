@@ -144,7 +144,7 @@ export default function CollaborationHub() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-md">
-        <div className="container flex items-center justify-between h-16 px-4">
+        <div className="container flex min-h-16 flex-wrap items-center justify-between gap-2 px-4 py-3 sm:h-16 sm:flex-nowrap sm:py-0">
           <div className="flex items-center gap-2">
             <div className="text-2xl font-bold neon-cyan">♪</div>
             <span className="text-xl font-bold tracking-wider">TuneCollab</span>
@@ -160,7 +160,7 @@ export default function CollaborationHub() {
             <button className="text-sm text-cyan-400 font-semibold">Collaborate</button>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 sm:gap-4">
             <button
               onClick={() => navigate("/")}
               className="px-3 py-2 text-gray-400 hover:text-cyan-400 transition flex items-center gap-1 cursor-pointer"
@@ -171,7 +171,7 @@ export default function CollaborationHub() {
             {isAuthenticated && (
               <button
                 onClick={() => navigate("/dashboard")}
-                className="px-4 py-2 text-sm bg-black/40 border border-white/10 rounded hover:bg-black/60 transition cursor-pointer"
+                className="rounded border border-white/10 bg-black/40 px-3 py-2 text-xs transition hover:bg-black/60 cursor-pointer sm:px-4 sm:text-sm"
               >
                 Dashboard
               </button>
@@ -181,24 +181,24 @@ export default function CollaborationHub() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-24 pb-12 px-4">
+      <main className="px-4 pb-12 pt-24 sm:px-6">
         <div className="container max-w-6xl mx-auto">
           {/* Page Header */}
-          <div className="mb-12">
-            <h1 className="text-5xl font-bold mb-4">
-              <span className="neon-cyan">COLLABORATE</span>
-              <span className="text-white mx-2">×</span>
-              <span className="neon-magenta">CREATE</span>
+          <div className="mb-8 sm:mb-12">
+            <h1 className="mobile-page-title flex flex-col items-start gap-0 text-2xl font-bold leading-tight sm:flex-row sm:items-baseline sm:gap-x-2 sm:gap-y-1 sm:text-5xl">
+              <span className="neon-cyan break-words sm:whitespace-nowrap">COLLABORATE</span>
+              <span className="text-white sm:mx-2">×</span>
+              <span className="neon-magenta break-words sm:whitespace-nowrap">CREATE</span>
             </h1>
-            <p className="text-gray-400 text-lg">
+            <p className="max-w-2xl text-base leading-relaxed text-gray-400 sm:text-lg">
               Join forces with other musicians. Create, remix, and produce together in real-time.
             </p>
           </div>
 
           {/* Controls */}
-          <div className="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+          <div className="mb-8 flex flex-col items-stretch gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
             {/* Search & Filter */}
-            <div className="flex-1 flex gap-3 w-full md:w-auto">
+            <div className="flex w-full min-w-0 flex-1 gap-3 md:w-auto">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
                 <Input
@@ -214,7 +214,7 @@ export default function CollaborationHub() {
             {/* Create Button */}
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition cursor-pointer whitespace-nowrap"
+              className="flex w-full items-center justify-center gap-2 rounded bg-gradient-to-r from-cyan-400 to-cyan-500 px-5 py-3 text-center font-bold text-black transition hover:opacity-90 cursor-pointer sm:w-auto sm:whitespace-nowrap sm:px-6"
             >
               <Plus size={20} />
               New Collaboration
@@ -222,12 +222,12 @@ export default function CollaborationHub() {
           </div>
 
           {/* Status Filter */}
-          <div className="mb-8 flex gap-2 flex-wrap">
+          <div className="mb-8 flex flex-wrap gap-2">
             {["draft", "in_progress", "completed"].map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(statusFilter === status ? null : status)}
-                className={`px-4 py-2 rounded border transition capitalize cursor-pointer ${
+                className={`rounded border px-3 py-2 text-sm capitalize transition cursor-pointer sm:px-4 ${
                   statusFilter === status
                     ? "bg-cyan-400/20 border-cyan-400/50 text-cyan-400"
                     : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
@@ -244,12 +244,12 @@ export default function CollaborationHub() {
               filteredProjects.map((project) => (
                 <div
                   key={project.id}
-                  className="border border-white/10 rounded-lg p-6 bg-white/5 hover:bg-white/10 hover:border-cyan-400/30 transition group"
+                  className="group min-w-0 rounded-lg border border-white/10 bg-white/5 p-4 transition hover:border-cyan-400/30 hover:bg-white/10 sm:p-6"
                 >
                   {/* Project Header */}
                   <div className="mb-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-lg font-bold text-white group-hover:text-cyan-400 transition">
+                    <div className="flex min-w-0 flex-col items-start gap-2 mb-2 sm:flex-row sm:items-start sm:justify-between">
+                      <h3 className="safe-wrap text-lg font-bold text-white transition group-hover:text-cyan-400">
                         {project.title}
                       </h3>
                       <span
@@ -284,16 +284,16 @@ export default function CollaborationHub() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2 pt-4 border-t border-white/10">
+                  <div className="flex flex-col gap-2 border-t border-white/10 pt-4 sm:flex-row">
                     <button
                       onClick={() => handleJoinProject(project.id, project.title)}
-                      className="flex-1 px-4 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition font-semibold cursor-pointer"
+                      className="w-full rounded border border-cyan-400/50 bg-cyan-400/20 px-4 py-2 font-semibold text-cyan-400 transition hover:bg-cyan-400/30 cursor-pointer sm:flex-1"
                     >
                       Join
                     </button>
                     <button
                       onClick={() => navigate(`/collaboration/${project.id}`)}
-                      className="flex-1 px-4 py-2 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 rounded hover:bg-magenta-400/30 transition font-semibold cursor-pointer"
+                      className="w-full rounded border border-magenta-400/50 bg-magenta-400/20 px-4 py-2 font-semibold text-magenta-400 transition hover:bg-magenta-400/30 cursor-pointer sm:flex-1"
                     >
                       Preview
                     </button>
@@ -302,7 +302,7 @@ export default function CollaborationHub() {
               ))
             ) : (
               <div className="col-span-full text-center py-12">
-                <p className="text-gray-400 text-lg">No projects found. Create one to get started!</p>
+                <p className="max-w-2xl text-base leading-relaxed text-gray-400 sm:text-lg">No projects found. Create one to get started!</p>
               </div>
             )}
           </div>
@@ -312,8 +312,8 @@ export default function CollaborationHub() {
       {/* Create Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-background border border-white/10 rounded-lg p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-6">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg border border-white/10 bg-background p-4 sm:p-8">
+            <h2 className="mb-6 flex flex-wrap gap-x-2 gap-y-1 text-xl font-bold sm:text-2xl">
               <span className="neon-cyan">CREATE</span>
               <span className="text-white mx-2">NEW</span>
               <span className="neon-magenta">PROJECT</span>
@@ -362,17 +362,17 @@ export default function CollaborationHub() {
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition font-semibold cursor-pointer"
+                  className="w-full rounded border border-white/10 bg-white/5 px-4 py-2 font-semibold transition hover:bg-white/10 cursor-pointer sm:flex-1"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black rounded hover:opacity-90 transition font-bold cursor-pointer"
+                  className="w-full rounded bg-gradient-to-r from-cyan-400 to-cyan-500 px-4 py-2 font-bold text-black transition hover:opacity-90 cursor-pointer sm:flex-1"
                 >
                   Create
                 </button>

@@ -172,23 +172,23 @@ export default function Explore() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-24 pb-12">
-        <div className="container">
+      <main className="pt-20 sm:pt-24 pb-10 sm:pb-12">
+        <div className="container w-full min-w-0">
           {/* Header */}
-          <div className="mb-12">
-            <h1 className="text-5xl font-bold mb-4">
-              <span className="neon-cyan">DISCOVER</span>
-              <span className="mx-2">×</span>
-              <span className="neon-magenta">EXPLORE</span>
+          <div className="mb-8 sm:mb-12 min-w-0">
+            <h1 className="mobile-page-title mb-4 flex flex-col items-start gap-0 text-2xl font-bold leading-tight sm:flex-row sm:items-baseline sm:gap-x-2 sm:gap-y-1 sm:text-5xl">
+              <span className="neon-cyan break-words sm:whitespace-nowrap">DISCOVER</span>
+              <span className="sm:mx-2">×</span>
+              <span className="neon-magenta break-words sm:whitespace-nowrap">EXPLORE</span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed">
               Immerse yourself in a universe of collaborative music. Discover trending tracks,
               explore genres, and find your next musical inspiration.
             </p>
           </div>
 
           {/* Search & Filter */}
-          <div className="mb-12 space-y-6">
+          <div className="mb-8 sm:mb-12 space-y-4 sm:space-y-6">
             {/* Search Bar */}
             <div className="relative">
               <Input
@@ -202,12 +202,12 @@ export default function Explore() {
             </div>
 
             {/* Genre Filter */}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               {genres.map((genre) => (
                 <button
                   key={genre}
                   onClick={() => setSelectedGenre(genre === "All" ? null : genre)}
-                  className={`px-4 py-2 rounded transition-all duration-200 border ${
+                  className={`px-3 sm:px-4 py-2 rounded transition-all duration-200 border text-sm sm:text-base ${
                     (selectedGenre === genre || (genre === "All" && !selectedGenre))
                       ? "bg-cyan-400/20 border-cyan-400 text-cyan-400"
                       : "bg-black/40 border-white/20 text-white hover:border-white/40"
@@ -231,7 +231,7 @@ export default function Explore() {
             {filteredTracks.map((track, index) => (
               <div
                 key={track.id}
-                className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-6 hover:border-cyan-400/50 transition-all duration-300 group scroll-fade-in"
+                className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-4 sm:p-6 hover:border-cyan-400/50 transition-all duration-300 group scroll-fade-in min-w-0"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 {/* Cover Art Placeholder */}
@@ -268,7 +268,7 @@ export default function Explore() {
                 </div>
 
                 {/* Stats */}
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-4 pb-4 border-b border-white/10">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground mb-4 pb-4 border-b border-white/10">
                   <span>▶ {track.plays.toLocaleString()} plays</span>
                   <span>⏱ {Math.floor(track.duration! / 60)}:{String(track.duration! % 60).padStart(2, "0")}</span>
                 </div>

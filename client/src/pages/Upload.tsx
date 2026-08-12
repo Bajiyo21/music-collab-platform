@@ -106,7 +106,7 @@ export default function Upload() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-md">
-        <div className="container flex items-center justify-between h-16 px-4">
+        <div className="container flex min-h-16 flex-wrap items-center justify-between gap-2 px-4 py-3 sm:h-16 sm:flex-nowrap sm:py-0">
           <div className="flex items-center gap-2">
             <div className="text-2xl font-bold neon-cyan">♪</div>
             <span className="text-xl font-bold tracking-wider">TuneCollab</span>
@@ -123,22 +123,22 @@ export default function Upload() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-24 pb-12 px-4">
+      <main className="px-4 pb-12 pt-24 sm:px-6">
         <div className="container max-w-2xl mx-auto">
           {/* Page Header */}
-          <div className="mb-12">
-            <h1 className="text-5xl font-bold mb-4">
+          <div className="mb-8 sm:mb-12">
+            <h1 className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-4xl font-bold leading-tight sm:text-5xl">
               <span className="neon-cyan">UPLOAD</span>
               <span className="text-white mx-2">YOUR</span>
               <span className="neon-magenta">TRACK</span>
             </h1>
-            <p className="text-gray-400 text-lg">
+            <p className="max-w-2xl text-base leading-relaxed text-gray-400 sm:text-lg">
               Share your music with the world. Your track will be protected with copyright verification.
             </p>
           </div>
 
           {/* Upload Form */}
-          <div className="bg-white/5 border border-white/10 rounded-lg p-8">
+          <div className="rounded-lg border border-white/10 bg-white/5 p-4 sm:p-8">
             {uploadComplete ? (
               <div className="text-center py-12">
                 <CheckCircle size={64} className="mx-auto mb-4 text-green-400" />
@@ -211,11 +211,11 @@ export default function Upload() {
                     />
                     <label
                       htmlFor="file-input"
-                      className="flex items-center justify-center gap-3 w-full p-6 border-2 border-dashed border-cyan-400/30 rounded-lg bg-cyan-400/5 hover:bg-cyan-400/10 transition cursor-pointer"
+                      className="flex w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-cyan-400/30 bg-cyan-400/5 p-4 text-center transition hover:bg-cyan-400/10 cursor-pointer sm:flex-row sm:p-6"
                     >
                       <UploadIcon size={24} className="text-cyan-400" />
                       <div className="text-center">
-                        <p className="font-semibold">
+                        <p className="safe-wrap max-w-full font-semibold">
                           {file ? file.name : "Click to select audio file"}
                         </p>
                         <p className="text-sm text-gray-400">MP3, WAV, FLAC, OGG (Max 100MB)</p>
@@ -225,7 +225,7 @@ export default function Upload() {
                 </div>
 
                 {/* Copyright Notice */}
-                <div className="bg-magenta-400/10 border border-magenta-400/30 rounded p-4">
+                <div className="rounded border border-magenta-400/30 bg-magenta-400/10 p-3 sm:p-4">
                   <p className="text-sm text-gray-300">
                     ✓ Your track is protected with SHA-256 file hashing
                   </p>
@@ -266,7 +266,7 @@ export default function Upload() {
           </div>
 
           {/* Info Box */}
-          <div className="mt-8 bg-black/40 border border-white/10 rounded-lg p-6">
+          <div className="mt-8 rounded-lg border border-white/10 bg-black/40 p-4 sm:p-6">
             <h3 className="font-bold mb-3 text-cyan-400">What happens next?</h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>✓ Your track is scanned for duplicates</li>
