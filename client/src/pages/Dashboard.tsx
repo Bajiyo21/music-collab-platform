@@ -1,265 +1,42 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { useLocation } from "wouter";
-import { Music, Users, Heart, Plus, TrendingUp, LogOut, ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import { ArrowLeft, Bell, Heart, Loader2, LogOut, Music, Plus, TrendingUp, Users, Settings2 } from "lucide-react";
+import { TrackManageDialog } from "@/components/TrackManageDialog";
 
-const MOCK_STATS = {
-  totalTracks: 12,
-  totalCollaborations: 5,
-  totalPlaylists: 8,
-  totalFollowers: 342,
+type DashboardTrack = {
+  id: number;
+  title: string;
+  description: string | null;
+  visibility: "public" | "private" | "unlisted" | null;
+  genreId: number | null;
+  tags: unknown;
 };
-
-const MOCK_RECENT_TRACKS = [
-  { id: 1, title: "Neon Dreams", genre: "Synthwave", plays: 245, likes: 34 },
-  { id: 2, title: "Digital Horizons", genre: "Electronic", plays: 189, likes: 26 },
-  { id: 3, title: "Cyber Nexus", genre: "Cyberpunk", plays: 278, likes: 45 },
-];
 
 export default function Dashboard() {
   const { isAuthenticated, user, logout } = useAuth();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "tracks" | "collaborations" | "playlists">("overview");
+  const profileQuery = trpc.users.myProfile.useQuery(undefined, { enabled: isAuthenticated });
+  const tracksQuery = trpc.tracks.myTracks.useQuery(undefined, { enabled: isAuthenticated });
+  const [editingTrack, setEditingTrack] = useState<DashboardTrack | null>(null);
+  const collabsQuery = trpc.collaborations.mine.useQuery(undefined, { enabled: isAuthenticated });
+  const playlistsQuery = trpc.playlists.list.useQuery(undefined, { enabled: isAuthenticated });
+  const unreadQuery = trpc.notifications.unreadCount.useQuery(undefined, { enabled: isAuthenticated });
+  if (!isAuthenticated) return <div className="flex min-h-screen items-center justify-center bg-background p-6 text-center"><div><h1 className="mb-4 text-3xl font-bold">Sign in to access your dashboard</h1><button onClick={() => navigate("/")} className="rounded bg-cyan-400 px-6 py-3 font-bold text-black">Go home</button></div></div>;
+  if (profileQuery.isLoading || tracksQuery.isLoading || collabsQuery.isLoading || playlistsQuery.isLoading) return <div className="flex min-h-screen items-center justify-center bg-background text-cyan-300"><Loader2 className="animate-spin" /></div>;
+  const tracks = tracksQuery.data ?? [];
+  const collabs = collabsQuery.data ?? [];
+  const playlists = playlistsQuery.data ?? [];
+  const followers = Number(profileQuery.data?.profile?.followerCount ?? 0);
+  const displayName = profileQuery.data?.user?.name ?? user?.name ?? "Musician";
+  const tabs = ["overview", "tracks", "collaborations", "playlists"] as const;
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Sign in to access dashboard</h1>
-          <button
-            onClick={() => navigate("/")}
-            className="px-6 py-3 bg-cyan-400 text-black font-bold rounded hover:bg-cyan-300 transition"
-          >
-            Go Home
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-md">
-        <div className="container flex min-h-16 flex-wrap items-center justify-between gap-2 px-4 py-3 sm:h-16 sm:flex-nowrap sm:py-0">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 hover:opacity-80 transition">
-            <div className="text-2xl font-bold neon-cyan">♪</div>
-            <span className="text-xl font-bold tracking-wider">TuneCollab</span>
-          </button>
-
-          <nav className="hidden md:flex items-center gap-8">
-            <button onClick={() => navigate("/")} className="text-sm hover:text-cyan-400 transition">
-              Home
-            </button>
-            <button onClick={() => navigate("/explore")} className="text-sm hover:text-cyan-400 transition">
-              Explore
-            </button>
-            <button className="text-sm text-cyan-400 font-semibold">Dashboard</button>
-          </nav>
-
-          <div className="flex items-center gap-1 sm:gap-4">
-            <button
-              onClick={() => navigate("/")}
-              className="px-3 py-2 text-gray-400 hover:text-cyan-400 transition flex items-center gap-1"
-            >
-              <ArrowLeft size={18} />
-              <span className="hidden sm:inline text-sm">Back</span>
-            </button>
-            <span className="text-sm text-muted-foreground hidden sm:inline">{user?.name || "User"}</span>
-            <button
-              onClick={() => logout()}
-              className="flex items-center gap-2 px-4 py-2 text-sm bg-black/40 border border-white/10 rounded hover:bg-black/60 transition-all"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="px-4 pb-12 pt-24 sm:px-6">
-        <div className="container max-w-6xl mx-auto">
-          {/* Welcome Section */}
-          <div className="mb-8 rounded-lg border border-white/10 bg-gradient-to-r from-cyan-500/10 to-magenta-500/10 p-4 sm:mb-12 sm:p-8">
-            <h1 className="safe-wrap mb-2 text-3xl font-bold leading-tight sm:text-4xl">Welcome back, {user?.name}!</h1>
-            <p className="text-muted-foreground mb-6">Ready to create something amazing?</p>
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
-              <button
-                onClick={() => navigate("/upload")}
-                className="flex w-full items-center justify-center gap-2 rounded bg-gradient-to-r from-cyan-400 to-cyan-500 px-5 py-3 text-center font-bold text-black transition hover:opacity-90 cursor-pointer sm:w-auto sm:px-6"
-              >
-                <Plus size={20} />
-                Upload Track
-              </button>
-              <button
-                onClick={() => navigate("/collaborate")}
-                className="flex w-full items-center justify-center gap-2 rounded border border-magenta-400/50 bg-magenta-400/20 px-5 py-3 text-center font-semibold text-magenta-400 transition-all hover:bg-magenta-400/30 cursor-pointer sm:w-auto sm:px-6"
-              >
-                <Users className="w-5 h-5" />
-                New Collaboration
-              </button>
-            </div>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mb-12 md:grid-cols-4 md:gap-6">
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-6 hover:border-cyan-400/50 transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-muted-foreground text-sm">Total Tracks</span>
-                <Music className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div className="text-3xl font-bold">{MOCK_STATS.totalTracks}</div>
-              <p className="text-xs text-muted-foreground mt-2">+2 this month</p>
-            </div>
-
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-6 hover:border-magenta-400/50 transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-muted-foreground text-sm">Collaborations</span>
-                <Users className="w-5 h-5 text-magenta-400" />
-              </div>
-              <div className="text-3xl font-bold">{MOCK_STATS.totalCollaborations}</div>
-              <p className="text-xs text-muted-foreground mt-2">+1 active</p>
-            </div>
-
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-6 hover:border-cyan-400/50 transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-muted-foreground text-sm">Playlists</span>
-                <Music className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div className="text-3xl font-bold">{MOCK_STATS.totalPlaylists}</div>
-              <p className="text-xs text-muted-foreground mt-2">+1 shared</p>
-            </div>
-
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-6 hover:border-magenta-400/50 transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-muted-foreground text-sm">Followers</span>
-                <Heart className="w-5 h-5 text-magenta-400" />
-              </div>
-              <div className="text-3xl font-bold">{MOCK_STATS.totalFollowers}</div>
-              <p className="text-xs text-muted-foreground mt-2">+12 this week</p>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="mb-8 overflow-x-auto border-b border-white/10">
-            <div className="flex min-w-max gap-6 sm:gap-8">
-              {["overview", "tracks", "collaborations", "playlists"].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`pb-4 px-2 font-semibold transition-all border-b-2 ${
-                    activeTab === tab
-                      ? "border-cyan-400 text-cyan-400"
-                      : "border-transparent text-muted-foreground hover:text-white"
-                  }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Tab Content */}
-          {activeTab === "overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Recent Tracks */}
-              <div className="lg:col-span-2 bg-black/40 backdrop-blur-md border border-white/10 rounded p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-cyan-400" />
-                    Recent Tracks
-                  </h2>
-                </div>
-
-                <div className="space-y-4">
-                  {MOCK_RECENT_TRACKS.map((track) => (
-                    <div key={track.id} className="flex flex-col items-stretch gap-3 rounded bg-black/20 p-4 transition-all hover:bg-black/40 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className="w-12 h-12 rounded bg-gradient-to-br from-cyan-500/20 to-magenta-500/20 flex items-center justify-center flex-shrink-0">
-                          <Music className="w-6 h-6 text-cyan-400" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">{track.title}</h3>
-                          <p className="text-xs text-muted-foreground">{track.genre}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground sm:gap-6">
-                        <span>▶ {track.plays}</span>
-                        <span>❤ {track.likes}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-6 h-fit">
-                <h3 className="text-lg font-bold mb-6">Quick Actions</h3>
-                <div className="space-y-3">
-                  <button onClick={() => navigate("/upload")} className="flex w-full items-center justify-center gap-2 rounded border border-cyan-400/50 bg-cyan-400/20 px-4 py-3 font-semibold text-cyan-400 transition-all hover:bg-cyan-400/30 cursor-pointer">
-                    <Plus className="w-4 h-4" />
-                    New Track
-                  </button>
-                  <button onClick={() => navigate("/collaborate")} className="flex w-full items-center justify-center gap-2 rounded border border-magenta-400/50 bg-magenta-400/20 px-4 py-3 font-semibold text-magenta-400 transition-all hover:bg-magenta-400/30 cursor-pointer">
-                    <Users className="w-4 h-4" />
-                    New Collab
-                  </button>
-                  <button onClick={() => navigate("/playlists")} className="flex w-full items-center justify-center gap-2 rounded border border-white/10 bg-black/40 px-4 py-3 font-semibold transition-all hover:bg-black/60 cursor-pointer">
-                    <Music className="w-4 h-4" />
-                    New Playlist
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "tracks" && (
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-6">
-              <h2 className="text-xl font-bold mb-6">Your Tracks ({MOCK_STATS.totalTracks})</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {MOCK_RECENT_TRACKS.map((track) => (
-                  <div key={track.id} className="bg-black/20 rounded p-4 hover:border-cyan-400/50 border border-white/10 transition-all">
-                    <div className="aspect-square bg-gradient-to-br from-cyan-500/20 to-magenta-500/20 rounded mb-4 flex items-center justify-center">
-                      <Music className="w-12 h-12 text-cyan-400/50" />
-                    </div>
-                    <h3 className="font-bold mb-2">{track.title}</h3>
-                    <p className="text-xs text-muted-foreground mb-4">{track.genre}</p>
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>▶ {track.plays}</span>
-                      <span>❤ {track.likes}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "collaborations" && (
-            <div className="text-center py-12 bg-black/40 backdrop-blur-md border border-white/10 rounded p-6">
-              <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <h3 className="text-xl font-bold mb-2">Active Collaborations</h3>
-              <p className="text-muted-foreground mb-6">You have {MOCK_STATS.totalCollaborations} active collaborations</p>
-              <button onClick={() => {}} className="flex items-center gap-2 px-6 py-3 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all mx-auto cursor-pointer">
-                <Plus className="w-4 h-4" />
-                Start New Collaboration
-              </button>
-            </div>
-          )}
-
-          {activeTab === "playlists" && (
-            <div className="text-center py-12 bg-black/40 backdrop-blur-md border border-white/10 rounded p-6">
-              <Music className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <h3 className="text-xl font-bold mb-2">Your Playlists</h3>
-              <p className="text-muted-foreground mb-6">You have {MOCK_STATS.totalPlaylists} playlists</p>
-              <button onClick={() => {}} className="flex items-center gap-2 px-6 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all mx-auto cursor-pointer">
-                <Plus className="w-4 h-4" />
-                Create Playlist
-              </button>
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
-  );
+  return <div className="min-h-screen bg-background text-foreground"><header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-md"><div className="container flex min-h-16 items-center justify-between gap-3 px-4"><button onClick={() => navigate("/")} className="flex items-center gap-2 text-gray-300 hover:text-cyan-300"><ArrowLeft size={18} /><span className="hidden sm:inline">Back</span></button><span className="font-bold tracking-wider"><span className="neon-cyan">TUNE</span><span className="text-white">×</span><span className="neon-magenta">COLLAB</span></span><div className="flex items-center gap-2"><button onClick={() => user?.id && navigate(`/profile/${user.id}`)} className="rounded border border-white/10 px-3 py-2 text-sm text-gray-400 hover:text-cyan-300">Profile</button><button onClick={() => logout()} className="rounded border border-white/10 p-2 text-gray-400 hover:text-red-300" aria-label="Log out"><LogOut size={16} /></button></div></div></header><main className="container max-w-6xl px-4 pb-16 pt-24"><section className="mb-8 rounded-lg border border-white/10 bg-gradient-to-r from-cyan-400/10 to-fuchsia-500/10 p-5 sm:p-8"><div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="mb-2 text-xs uppercase tracking-[0.3em] text-cyan-300">Creator console</p><h1 className="break-words text-3xl font-bold sm:text-4xl">Welcome back, {displayName}</h1><p className="mt-2 text-gray-400">Manage your tracks, projects, playlists, and community activity.</p></div><div className="flex gap-3"><button onClick={() => navigate("/upload")} className="flex items-center gap-2 rounded bg-cyan-400 px-4 py-3 font-bold text-black"><Plus size={18} /> Upload track</button><button onClick={() => navigate("/collaborate")} className="flex items-center gap-2 rounded border border-fuchsia-400/40 px-4 py-3 text-fuchsia-300"><Users size={18} /> Collaborate</button></div></div></section><section className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4"><Stat label="Tracks" value={tracks.length} icon={<Music size={18} />} color="text-cyan-300" /><Stat label="Projects" value={collabs.length} icon={<Users size={18} />} color="text-fuchsia-300" /><Stat label="Playlists" value={playlists.length} icon={<Music size={18} />} color="text-cyan-300" /><Stat label="Followers" value={followers} icon={<Heart size={18} />} color="text-fuchsia-300" /></section><div className="mb-8 flex flex-col gap-3 border-b border-white/10 sm:flex-row sm:items-center sm:justify-between"><div className="flex min-w-0 gap-5 overflow-x-auto pb-px">{tabs.map((tab) => <button key={tab} onClick={() => setActiveTab(tab)} className={`shrink-0 whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-semibold capitalize ${activeTab === tab ? "border-cyan-400 text-cyan-300" : "border-transparent text-gray-500 hover:text-white"}`}>{tab}</button>)}</div><button onClick={() => navigate("/notifications")} className="relative self-end rounded p-2 text-gray-400 hover:text-cyan-300 sm:self-auto" aria-label="Notifications"><Bell size={18} />{Number(unreadQuery.data?.count ?? 0) > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-fuchsia-400 px-1.5 text-[10px] text-black">{unreadQuery.data?.count}</span>}</button></div>{activeTab === "overview" && <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]"><section className="rounded-lg border border-white/10 bg-black/30 p-5 sm:p-6"><div className="mb-5 flex items-center justify-between"><h2 className="flex items-center gap-2 text-xl font-bold"><TrendingUp size={19} className="text-cyan-300" /> Recent tracks</h2><button onClick={() => setActiveTab("tracks")} className="text-sm text-cyan-300 hover:underline">View all</button></div>{tracks.length ? <div className="space-y-3">{tracks.slice(0, 5).map((track) => <div key={track.id} className="flex items-center gap-3 rounded border border-white/10 bg-white/5 p-3"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded bg-gradient-to-br from-cyan-400/20 to-fuchsia-400/20"><Music size={20} className="text-cyan-300" /></div><div className="min-w-0 flex-1"><h3 className="truncate font-semibold">{track.title}</h3><p className="text-xs text-gray-500">{Number(track.plays ?? 0).toLocaleString()} plays · {Number(track.likes ?? 0)} likes</p></div><div className="flex shrink-0 gap-2"><button onClick={() => track.visibility === "public" ? navigate(`/track/${track.id}`) : setEditingTrack(track)} className="rounded border border-white/10 px-3 py-2 text-xs text-gray-400 hover:text-cyan-300">{track.visibility === "public" ? "Open" : "Manage"}</button><button onClick={() => setEditingTrack(track)} aria-label={`Manage ${track.title}`} className="rounded border border-white/10 p-2 text-gray-400 hover:border-cyan-400/40 hover:text-cyan-300"><Settings2 size={15} /></button></div></div>)}</div> : <Empty text="You have not uploaded a track yet." action="Upload your first track" onClick={() => navigate("/upload")} />}</section><aside className="rounded-lg border border-white/10 bg-black/30 p-5 sm:p-6"><h2 className="mb-5 text-lg font-bold">Quick actions</h2><div className="space-y-3"><Action label="Upload new track" onClick={() => navigate("/upload")} icon={<Plus size={16} />} /><Action label="Start collaboration" onClick={() => navigate("/collaborate")} icon={<Users size={16} />} /><Action label="Manage playlists" onClick={() => navigate("/playlists")} icon={<Music size={16} />} /><Action label="Edit profile" onClick={() => user?.id && navigate(`/profile/${user.id}`)} icon={<Heart size={16} />} /></div></aside></div>}{activeTab === "tracks" && <Collection title={`Your tracks (${tracks.length})`} empty="Upload a track to start building your catalog." action="Upload track" onAction={() => navigate("/upload")}>{tracks.map((track) => <div key={track.id} className="rounded border border-white/10 bg-black/30 p-4"><div className="mb-4 flex aspect-[1.7] items-center justify-center rounded bg-gradient-to-br from-cyan-400/15 to-fuchsia-400/15"><Music className="text-cyan-300/60" size={44} /></div><h3 className="truncate font-bold">{track.title}</h3><p className="mt-1 text-xs text-gray-500">{track.visibility} · {Number(track.plays ?? 0)} plays</p><div className="mt-4 flex gap-2"><button onClick={() => track.visibility === "public" ? navigate(`/track/${track.id}`) : setEditingTrack(track)} className="min-w-0 flex-1 rounded border border-cyan-400/30 py-2 text-sm text-cyan-300">{track.visibility === "public" ? "Open track" : "Manage upload"}</button><button onClick={() => setEditingTrack(track)} aria-label={`Manage ${track.title}`} className="rounded border border-cyan-400/30 p-2 text-cyan-300"><Settings2 size={16} /></button></div></div>)}</Collection>}{activeTab === "collaborations" && <Collection title={`Your collaborations (${collabs.length})`} empty="Start a project and invite other musicians." action="New collaboration" onAction={() => navigate("/collaborate")}>{collabs.map((collab) => <div key={collab.id} className="rounded border border-white/10 bg-black/30 p-4"><div className="mb-4 flex aspect-[1.7] items-center justify-center rounded bg-gradient-to-br from-fuchsia-400/15 to-cyan-400/15"><Users className="text-fuchsia-300/60" size={44} /></div><h3 className="truncate font-bold">{collab.title}</h3><p className="mt-1 text-xs text-gray-500">{collab.status} · {new Date(collab.createdAt).toLocaleDateString()}</p><button onClick={() => navigate(`/collaboration/${collab.id}`)} className="mt-4 w-full rounded border border-fuchsia-400/30 py-2 text-sm text-fuchsia-300">Open room</button></div>)}</Collection>}{activeTab === "playlists" && <Collection title={`Your playlists (${playlists.length})`} empty="Create a playlist for your next listening session." action="Open playlists" onAction={() => navigate("/playlists")}>{playlists.map((playlist) => <div key={playlist.id} className="rounded border border-white/10 bg-black/30 p-4"><div className="mb-4 flex aspect-[1.7] items-center justify-center rounded bg-gradient-to-br from-cyan-400/15 to-fuchsia-400/15"><Music className="text-cyan-300/60" size={44} /></div><h3 className="truncate font-bold">{playlist.title}</h3><p className="mt-1 text-xs text-gray-500">{playlist.visibility} · {playlist.trackCount ?? 0} tracks</p><button onClick={() => navigate(`/playlist/${playlist.id}`)} className="mt-4 w-full rounded border border-cyan-400/30 py-2 text-sm text-cyan-300">Open playlist</button></div>)}</Collection>}{editingTrack && <TrackManageDialog track={editingTrack} onClose={() => setEditingTrack(null)} />}</main></div>;
 }
+
+function Stat({ label, value, icon, color }: { label: string; value: number; icon: React.ReactNode; color: string }) { return <div className="rounded border border-white/10 bg-black/30 p-4 sm:p-5"><div className={`mb-3 flex items-center justify-between ${color}`}><span className="text-xs text-gray-500">{label}</span>{icon}</div><div className="text-2xl font-bold sm:text-3xl">{value.toLocaleString()}</div></div>; }
+function Action({ label, onClick, icon }: { label: string; onClick: () => void; icon: React.ReactNode }) { return <button onClick={onClick} className="flex w-full items-center justify-center gap-2 rounded border border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-300 hover:border-cyan-400/40 hover:text-cyan-300">{icon}{label}</button>; }
+function Empty({ text, action, onClick }: { text: string; action: string; onClick: () => void }) { return <div className="py-10 text-center"><p className="mb-4 text-sm text-gray-500">{text}</p><button onClick={onClick} className="rounded border border-cyan-400/40 px-4 py-2 text-sm text-cyan-300">{action}</button></div>; }
+function Collection({ title, empty, action, onAction, children }: { title: string; empty: string; action: string; onAction: () => void; children: React.ReactNode }) { const hasChildren = Array.isArray(children) ? children.length > 0 : Boolean(children); return <section className="rounded-lg border border-white/10 bg-black/30 p-5 sm:p-6"><div className="mb-6 flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-bold">{title}</h2><button onClick={onAction} className="rounded border border-cyan-400/40 px-3 py-2 text-sm text-cyan-300">{action}</button></div>{hasChildren ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div> : <Empty text={empty} action={action} onClick={onAction} />}</section>; }

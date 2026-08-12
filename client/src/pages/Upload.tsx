@@ -10,7 +10,10 @@ export default function Upload() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [genre, setGenre] = useState("Electronic");
+  const [tags, setTags] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [coverArt, setCoverArt] = useState<File | null>(null);
+  const [visibility, setVisibility] = useState<"public" | "private" | "unlisted">("public");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploadComplete, setUploadComplete] = useState(false);
@@ -47,6 +50,20 @@ export default function Upload() {
     }
   };
 
+  const handleCoverArtChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      toast.error("Cover art is too large. Maximum 5MB.");
+      return;
+    }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(selectedFile.type)) {
+      toast.error("Cover art must be JPG, PNG, or WebP.");
+      return;
+    }
+    setCoverArt(selectedFile);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -68,6 +85,9 @@ export default function Upload() {
     formData.append("title", title.trim());
     formData.append("description", description.trim());
     formData.append("genre", genre);
+    formData.append("tags", tags);
+    formData.append("visibility", visibility);
+    if (coverArt) formData.append("coverArt", coverArt);
 
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/upload-track");
@@ -92,7 +112,10 @@ export default function Upload() {
           setTitle("");
           setDescription("");
           setGenre("Electronic");
+          setTags("");
+          setVisibility("public");
           setFile(null);
+          setCoverArt(null);
           setProgress(0);
           setUploading(false);
           setUploadComplete(false);
@@ -206,6 +229,30 @@ export default function Upload() {
                     <option value="Techno">Techno</option>
                     <option value="Drum & Bass">Drum & Bass</option>
                   </select>
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <label className="mb-2 block text-sm font-semibold">Tags</label>
+                  <input type="text" value={tags} onChange={(e) => setTags(e.target.value)} disabled={uploading} placeholder="night drive, breakbeat, analog" className="w-full rounded border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 focus:border-cyan-400/50 focus:outline-none" />
+                  <p className="mt-2 text-xs text-gray-500">Separate tags with commas. The selected genre is stored as a tag as well.</p>
+                </div>
+
+                {/* Visibility */}
+                <div>
+                  <label className="mb-2 block text-sm font-semibold">Visibility</label>
+                  <select value={visibility} onChange={(e) => setVisibility(e.target.value as "public" | "private" | "unlisted")} disabled={uploading} className="w-full rounded border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-cyan-400/50 focus:outline-none">
+                    <option value="public">Public — discoverable in Explore</option>
+                    <option value="unlisted">Unlisted — accessible by direct link</option>
+                    <option value="private">Private — visible only in your library</option>
+                  </select>
+                </div>
+
+                {/* Cover Art */}
+                <div>
+                  <label className="mb-2 block text-sm font-semibold">Cover Art (optional)</label>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleCoverArtChange} disabled={uploading} className="block w-full rounded border border-white/10 bg-white/5 p-3 text-sm text-gray-300 file:mr-3 file:rounded file:border-0 file:bg-fuchsia-400 file:px-3 file:py-2 file:font-semibold file:text-black" />
+                  <p className="mt-2 text-xs text-gray-500">JPG, PNG, or WebP up to 5MB. {coverArt ? `Selected: ${coverArt.name}` : "A square image works best."}</p>
                 </div>
 
                 {/* File Upload */}

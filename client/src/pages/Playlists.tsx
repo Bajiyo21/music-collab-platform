@@ -1,307 +1,48 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Plus, ArrowLeft, Trash2, Edit2, Share2, Lock, Globe } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-
-interface Playlist {
-  id: number;
-  name: string;
-  description: string;
-  trackCount: number;
-  visibility: "public" | "private";
-  createdAt: string;
-  updatedAt: string;
-  coverUrl?: string;
-}
-
-const MOCK_PLAYLISTS: Playlist[] = [
-  {
-    id: 1,
-    name: "Synthwave Vibes",
-    description: "Collection of my favorite synthwave tracks",
-    trackCount: 12,
-    visibility: "public",
-    createdAt: "2026-07-20",
-    updatedAt: "2026-08-05",
-  },
-  {
-    id: 2,
-    name: "Late Night Coding",
-    description: "Perfect for focused work sessions",
-    trackCount: 8,
-    visibility: "private",
-    createdAt: "2026-07-15",
-    updatedAt: "2026-08-02",
-  },
-  {
-    id: 3,
-    name: "Glitch Hop Essentials",
-    description: "Essential glitch hop tracks",
-    trackCount: 15,
-    visibility: "public",
-    createdAt: "2026-07-10",
-    updatedAt: "2026-08-01",
-  },
-];
+import { ArrowLeft, Edit2, Globe, Lock, Plus, Share2, Trash2 } from "lucide-react";
 
 export default function Playlists() {
   const [, navigate] = useLocation();
-  const { user, isAuthenticated } = useAuth();
-  const [playlists, setPlaylists] = useState<Playlist[]>(MOCK_PLAYLISTS);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newPlaylistName, setNewPlaylistName] = useState("");
-  const [newPlaylistDesc, setNewPlaylistDesc] = useState("");
-  const [newPlaylistVisibility, setNewPlaylistVisibility] = useState<"public" | "private">("private");
+  const { isAuthenticated } = useAuth();
+  const [showCreate, setShowCreate] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [visibility, setVisibility] = useState<"public" | "private">("private");
+  const utils = trpc.useUtils();
+  const playlistsQuery = trpc.playlists.list.useQuery(undefined, { enabled: isAuthenticated });
+  const createMutation = trpc.playlists.create.useMutation({ onSuccess: () => { utils.playlists.list.invalidate(); closeEditor(); toast.success("Playlist created"); } });
+  const updateMutation = trpc.playlists.update.useMutation({ onSuccess: () => { utils.playlists.list.invalidate(); closeEditor(); toast.success("Playlist updated"); } });
+  const deleteMutation = trpc.playlists.delete.useMutation({ onSuccess: () => { utils.playlists.list.invalidate(); toast.success("Playlist deleted"); } });
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center">
-          <p className="mb-4 text-lg">Please sign in to manage playlists</p>
-          <button
-            onClick={() => navigate("/")}
-            className="px-6 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition cursor-pointer"
-          >
-            Go Home
-          </button>
-        </div>
-      </div>
-    );
+  if (!isAuthenticated) return <Gate navigate={navigate} />;
+  const playlists = playlistsQuery.data ?? [];
+
+  function closeEditor() { setShowCreate(false); setEditingId(null); setTitle(""); setDescription(""); setVisibility("private"); }
+  function openCreate() { setShowCreate(true); setEditingId(null); setTitle(""); setDescription(""); setVisibility("private"); }
+  function openEdit(playlist: typeof playlists[number]) { setShowCreate(false); setEditingId(playlist.id); setTitle(playlist.title); setDescription(playlist.description ?? ""); setVisibility(playlist.visibility ?? "private"); }
+  function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!title.trim()) return toast.error("Enter a playlist title");
+    if (editingId) updateMutation.mutate({ playlistId: editingId, title: title.trim(), description: description.trim() || null, visibility });
+    else createMutation.mutate({ title: title.trim(), description: description.trim() || undefined, visibility });
+  }
+  async function share(playlistId: number, playlistTitle: string) {
+    const url = `${window.location.origin}/playlist/${playlistId}`;
+    try { await navigator.clipboard.writeText(url); toast.success(`${playlistTitle} link copied`); } catch { toast.error("Copy failed; use the playlist URL from your browser"); }
   }
 
-  const handleCreatePlaylist = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!newPlaylistName.trim()) {
-      toast.error("Please enter a playlist name");
-      return;
-    }
-
-    const newPlaylist: Playlist = {
-      id: Math.max(...playlists.map((p) => p.id), 0) + 1,
-      name: newPlaylistName,
-      description: newPlaylistDesc,
-      trackCount: 0,
-      visibility: newPlaylistVisibility,
-      createdAt: new Date().toISOString().split("T")[0],
-      updatedAt: new Date().toISOString().split("T")[0],
-    };
-
-    setPlaylists([newPlaylist, ...playlists]);
-    toast.success(`Playlist "${newPlaylistName}" created!`);
-    setNewPlaylistName("");
-    setNewPlaylistDesc("");
-    setNewPlaylistVisibility("private");
-    setShowCreateModal(false);
-  };
-
-  const handleDeletePlaylist = (id: number, name: string) => {
-    if (confirm(`Are you sure you want to delete "${name}"?`)) {
-      setPlaylists(playlists.filter((p) => p.id !== id));
-      toast.success("Playlist deleted");
-    }
-  };
-
-  const handleSharePlaylist = (name: string) => {
-    toast.success(`Playlist "${name}" link copied to clipboard!`);
-  };
-
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-md">
-        <div className="container flex items-center justify-between h-16 px-4">
-          <div className="flex items-center gap-2">
-            <div className="text-2xl font-bold neon-cyan">♪</div>
-            <span className="text-xl font-bold tracking-wider">TuneCollab</span>
-          </div>
-
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="px-3 py-2 text-gray-400 hover:text-cyan-400 transition flex items-center gap-1 cursor-pointer"
-          >
-            <ArrowLeft size={18} />
-            <span className="hidden sm:inline text-sm">Back</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="pt-24 pb-12 px-4">
-        <div className="container max-w-6xl mx-auto">
-          {/* Page Header */}
-          <div className="mb-12 flex items-center justify-between">
-            <div>
-              <h1 className="text-5xl font-bold mb-4">
-                <span className="neon-cyan">MY</span>
-                <span className="text-white mx-2">×</span>
-                <span className="neon-magenta">PLAYLISTS</span>
-              </h1>
-              <p className="text-gray-400 text-lg">Create and manage your music collections</p>
-            </div>
-
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition cursor-pointer whitespace-nowrap"
-            >
-              <Plus size={20} />
-              New Playlist
-            </button>
-          </div>
-
-          {/* Playlists Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {playlists.length > 0 ? (
-              playlists.map((playlist) => (
-                <div
-                  key={playlist.id}
-                  className="border border-white/10 rounded-lg p-6 bg-white/5 hover:bg-white/10 hover:border-cyan-400/30 transition group"
-                >
-                  {/* Playlist Header */}
-                  <div className="mb-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-lg font-bold text-white group-hover:text-cyan-400 transition">
-                        {playlist.name}
-                      </h3>
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 ${
-                          playlist.visibility === "public"
-                            ? "bg-cyan-400/20 text-cyan-400"
-                            : "bg-magenta-400/20 text-magenta-400"
-                        }`}
-                      >
-                        {playlist.visibility === "public" ? (
-                          <>
-                            <Globe size={12} />
-                            Public
-                          </>
-                        ) : (
-                          <>
-                            <Lock size={12} />
-                            Private
-                          </>
-                        )}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-400 line-clamp-2">{playlist.description}</p>
-                  </div>
-
-                  {/* Playlist Info */}
-                  <div className="mb-4 text-sm text-gray-400">
-                    <p>{playlist.trackCount} tracks</p>
-                    <p className="text-xs">Updated {playlist.updatedAt}</p>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 pt-4 border-t border-white/10">
-                    <button
-                      onClick={() => navigate(`/playlist/${playlist.id}`)}
-                      className="flex-1 px-4 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition font-semibold cursor-pointer"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={() => handleSharePlaylist(playlist.name)}
-                      className="px-3 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition cursor-pointer"
-                      title="Share"
-                    >
-                      <Share2 size={18} />
-                    </button>
-                    <button
-                      onClick={() => navigate(`/playlist/${playlist.id}/edit`)}
-                      className="px-3 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition cursor-pointer"
-                      title="Edit"
-                    >
-                      <Edit2 size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleDeletePlaylist(playlist.id, playlist.name)}
-                      className="px-3 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded hover:bg-red-500/20 transition cursor-pointer"
-                      title="Delete"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <p className="text-gray-400 text-lg">No playlists yet. Create one to get started!</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
-
-      {/* Create Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-background border border-white/10 rounded-lg p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-6">
-              <span className="neon-cyan">CREATE</span>
-              <span className="text-white mx-2">NEW</span>
-              <span className="neon-magenta">PLAYLIST</span>
-            </h2>
-
-            <form onSubmit={handleCreatePlaylist} className="space-y-4">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-semibold mb-2">Playlist Name *</label>
-                <input
-                  type="text"
-                  value={newPlaylistName}
-                  onChange={(e) => setNewPlaylistName(e.target.value)}
-                  placeholder="e.g., Late Night Vibes"
-                  className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-semibold mb-2">Description</label>
-                <textarea
-                  value={newPlaylistDesc}
-                  onChange={(e) => setNewPlaylistDesc(e.target.value)}
-                  placeholder="Describe your playlist..."
-                  rows={3}
-                  className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition resize-none"
-                />
-              </div>
-
-              {/* Visibility */}
-              <div>
-                <label className="block text-sm font-semibold mb-2">Visibility</label>
-                <select
-                  value={newPlaylistVisibility}
-                  onChange={(e) => setNewPlaylistVisibility(e.target.value as "public" | "private")}
-                  className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-400/50 transition"
-                >
-                  <option value="private">Private</option>
-                  <option value="public">Public</option>
-                </select>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition font-semibold cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black rounded hover:opacity-90 transition font-bold cursor-pointer"
-                >
-                  Create
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  return <div className="min-h-screen bg-background text-foreground">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-md"><div className="container flex h-16 items-center justify-between px-4"><button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-gray-400 hover:text-cyan-300"><ArrowLeft size={18} /><span className="hidden sm:inline">Back</span></button><span className="text-lg font-bold tracking-widest"><span className="neon-cyan">TUNE</span><span className="text-white">×</span><span className="neon-magenta">COLLAB</span></span><button onClick={openCreate} className="flex items-center gap-2 rounded bg-cyan-400 px-4 py-2 text-sm font-bold text-black hover:bg-cyan-300"><Plus size={16} /> New playlist</button></div></header>
+    <main className="container max-w-6xl px-4 pb-16 pt-24"><div className="mb-10"><p className="mb-2 text-xs uppercase tracking-[0.3em] text-cyan-300">Personal library</p><h1 className="!text-[clamp(1.6rem,6.5vw,3rem)] font-bold leading-[0.95] tracking-tight"><span className="neon-cyan">MY</span><span className="mx-2 text-white">×</span><span className="neon-magenta">PLAYLISTS</span></h1><p className="mt-3 text-gray-400">Keep your favorite collaborative discoveries organized.</p></div>
+      {playlistsQuery.isLoading ? <div className="py-20 text-center text-cyan-300">Loading playlists...</div> : playlists.length === 0 ? <div className="rounded border border-dashed border-white/15 bg-black/20 px-6 py-16 text-center text-gray-400"><p className="mb-4 text-lg">No playlists yet.</p><button onClick={openCreate} className="rounded border border-cyan-400/50 px-4 py-2 text-cyan-300 hover:bg-cyan-400/10">Create your first playlist</button></div> : <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{playlists.map((playlist) => <article key={playlist.id} className="rounded-lg border border-white/10 bg-black/30 p-5 transition hover:border-cyan-400/40"><div className="mb-5 flex aspect-[4/3] items-center justify-center rounded bg-gradient-to-br from-cyan-500/15 to-fuchsia-500/15"><span className="text-5xl text-cyan-300/50">♫</span></div><div className="flex items-start justify-between gap-3"><div><h2 className="font-bold text-white">{playlist.title}</h2><p className="mt-1 line-clamp-2 text-sm text-gray-400">{playlist.description || "No description"}</p></div><span className={`shrink-0 rounded px-2 py-1 text-[10px] uppercase ${playlist.visibility === "public" ? "bg-cyan-400/10 text-cyan-300" : "bg-fuchsia-400/10 text-fuchsia-300"}`}>{playlist.visibility === "public" ? <Globe size={12} /> : <Lock size={12} />}</span></div><div className="mt-4 flex items-center justify-between text-xs text-gray-500"><span>{playlist.trackCount ?? 0} tracks</span><span>{playlist.createdAt ? new Date(playlist.createdAt).toLocaleDateString() : ""}</span></div><div className="mt-5 flex gap-2 border-t border-white/10 pt-4"><button onClick={() => navigate(`/playlist/${playlist.id}`)} className="flex-1 rounded border border-cyan-400/40 px-3 py-2 text-sm font-semibold text-cyan-300 hover:bg-cyan-400/10">Open</button><button onClick={() => share(playlist.id, playlist.title)} className="rounded border border-white/10 p-2 text-gray-400 hover:text-cyan-300" aria-label={`Share ${playlist.title}`}><Share2 size={16} /></button><button onClick={() => openEdit(playlist)} className="rounded border border-white/10 p-2 text-gray-400 hover:text-cyan-300" aria-label={`Edit ${playlist.title}`}><Edit2 size={16} /></button><button onClick={() => { if (window.confirm(`Delete ${playlist.title}?`)) deleteMutation.mutate({ playlistId: playlist.id }); }} className="rounded border border-red-400/20 p-2 text-red-300 hover:bg-red-400/10" aria-label={`Delete ${playlist.title}`}><Trash2 size={16} /></button></div></article>)}</div>}
+    </main>
+    {(showCreate || editingId !== null) && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4"><form onSubmit={submit} className="w-full max-w-md rounded-lg border border-white/15 bg-[#090909] p-6 shadow-2xl"><div className="mb-5 flex items-center justify-between"><h2 className="text-xl font-bold">{editingId ? "Edit playlist" : "Create playlist"}</h2><button type="button" onClick={closeEditor} className="text-gray-500 hover:text-white">×</button></div><label className="mb-4 block"><span className="mb-2 block text-sm font-semibold">Title</span><input autoFocus value={title} onChange={(e) => setTitle(e.target.value)} maxLength={255} className="w-full rounded border border-white/10 bg-white/5 p-3 text-white outline-none focus:border-cyan-400/60" /></label><label className="mb-4 block"><span className="mb-2 block text-sm font-semibold">Description</span><textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={5000} rows={4} className="w-full rounded border border-white/10 bg-white/5 p-3 text-white outline-none focus:border-cyan-400/60" /></label><label className="mb-6 block"><span className="mb-2 block text-sm font-semibold">Visibility</span><select value={visibility} onChange={(e) => setVisibility(e.target.value as "public" | "private")} className="w-full rounded border border-white/10 bg-white/5 p-3 text-white outline-none"><option value="private">Private</option><option value="public">Public</option></select></label><div className="flex gap-3"><button type="button" onClick={closeEditor} className="flex-1 rounded border border-white/10 px-4 py-2 text-gray-300 hover:bg-white/5">Cancel</button><button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="flex-1 rounded bg-cyan-400 px-4 py-2 font-bold text-black hover:bg-cyan-300">{createMutation.isPending || updateMutation.isPending ? "Saving..." : editingId ? "Save changes" : "Create"}</button></div></form></div>}
+  </div>;
 }
+
+function Gate({ navigate }: { navigate: (path: string) => void }) { return <div className="flex min-h-screen items-center justify-center bg-background p-6 text-center"><div><h1 className="mb-3 text-2xl font-bold">Sign in to manage playlists</h1><p className="mb-5 text-gray-400">Your collections are stored with your account.</p><button onClick={() => navigate("/")} className="rounded bg-cyan-400 px-5 py-2 font-bold text-black">Go home</button></div></div>; }

@@ -23,6 +23,36 @@ import {
   createCollaborationRecord,
 } from "./db";
 import { z } from "zod";
+import {
+  addCollaborationCommentRecord,
+  addCollaborationLayerRecord,
+  addTrackComment,
+  addTrackToPlaylistRecord,
+  createCollaborationInvitation,
+  createPlaylistRecord,
+  followUser,
+  getCollaborationComments,
+  getCollaborationContributors,
+  getUserById,
+  getUserFollowers,
+  getPublicCollaborations,
+  joinCollaborationRecord,
+  getUserInvitations,
+  isFollowingUser,
+  markAllNotificationsRead,
+  markNotificationRead,
+  removeTrackFromPlaylistRecord,
+  respondToCollaborationInvitation,
+  toggleTrackLike,
+  unfollowUser,
+  updatePlaylistRecord,
+  updateUserProfile,
+  deletePlaylistRecord,
+  updateCollaborationLayerRecord,
+  removeCollaborationLayerRecord,
+  updateTrackRecord,
+  deleteTrackRecord,
+} from "./feature-db";
 
 export const appRouter = router({
   system: systemRouter,
@@ -52,32 +82,65 @@ export const appRouter = router({
       }),
 
     search: publicProcedure
-      .input(z.object({ query: z.string(), limit: z.number().default(20) }))
+      .input(z.object({ query: z.string().trim().min(1), limit: z.number().int().min(1).max(50).default(20), offset: z.number().int().min(0).default(0) }))
       .query(async ({ input }) => {
-        return await searchTracks(input.query, input.limit);
+        return await searchTracks(input.query, input.limit, input.offset);
       }),
 
     byId: publicProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
-        return await getTrackById(input.id);
+        const track = await getTrackById(input.id);
+        return track?.visibility === "public" ? track : undefined;
       }),
 
     userTracks: protectedProcedure
       .input(z.object({ userId: z.number() }))
       .query(async ({ input }) => {
-        return await getUserTracks(input.userId);
+        const tracks = await getUserTracks(input.userId);
+        return tracks.filter((track) => track.visibility === "public");
       }),
 
     myTracks: protectedProcedure.query(async ({ ctx }) => {
       return await getUserTracks(ctx.user.id);
     }),
 
+    update: protectedProcedure
+      .input(z.object({
+        trackId: z.number(),
+        title: z.string().trim().min(1).max(255).optional(),
+        description: z.string().max(10000).nullable().optional(),
+        visibility: z.enum(["public", "private", "unlisted"]).optional(),
+        license: z.enum(["cc0", "cc-by", "cc-by-sa", "cc-by-nd", "cc-by-nc", "cc-by-nc-sa", "cc-by-nc-nd", "all-rights-reserved"]).optional(),
+        genreId: z.number().nullable().optional(),
+        tags: z.array(z.string().trim().min(1).max(64)).max(20).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => updateTrackRecord(input.trackId, ctx.user.id, {
+        title: input.title,
+        description: input.description,
+        visibility: input.visibility,
+        license: input.license,
+        genreId: input.genreId,
+        tags: input.tags,
+      })),
+
+    delete: protectedProcedure
+      .input(z.object({ trackId: z.number() }))
+      .mutation(async ({ input, ctx }) => deleteTrackRecord(input.trackId, ctx.user.id)),
+
     comments: publicProcedure
       .input(z.object({ trackId: z.number() }))
       .query(async ({ input }) => {
         return await getTrackComments(input.trackId);
       }),
+
+    like: protectedProcedure
+      .input(z.object({ trackId: z.number() }))
+      .mutation(async ({ input, ctx }) => toggleTrackLike(input.trackId, ctx.user.id)),
+
+    addComment: protectedProcedure
+      .input(z.object({ trackId: z.number(), text: z.string().trim().min(1).max(5000) }))
+      .mutation(async ({ input, ctx }) => addTrackComment(input.trackId, ctx.user.id, input.text)),
 
     duplicateByHash: protectedProcedure
       .input(z.object({ fileHash: z.string().length(64) }))
@@ -93,9 +156,9 @@ export const appRouter = router({
   // COLLABORATIONS
   // ============================================
   collaborations: router({
-    list: protectedProcedure.query(async ({ ctx }) => {
-      return await getUserCollaborations(ctx.user.id);
-    }),
+    list: publicProcedure.query(async () => getPublicCollaborations()),
+
+    mine: protectedProcedure.query(async ({ ctx }) => getUserCollaborations(ctx.user.id)),
 
     byId: publicProcedure
       .input(z.object({ id: z.number() }))
@@ -108,6 +171,10 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await getCollaborationLayers(input.collabId);
       }),
+
+    join: protectedProcedure
+      .input(z.object({ collabId: z.number() }))
+      .mutation(async ({ input, ctx }) => joinCollaborationRecord(input.collabId, ctx.user.id)),
 
     create: protectedProcedure
       .input(
@@ -128,20 +195,38 @@ export const appRouter = router({
       }),
 
     invite: protectedProcedure
-      .input(
-        z.object({
-          collabId: z.number(),
-          userId: z.number(),
-          message: z.string().optional(),
-        })
-      )
-      .mutation(async ({ input, ctx }) => {
-        // TODO: Implement invitation system
-        return {
-          success: true,
-          message: "Collaboration invitation endpoint ready for implementation",
-        };
-      }),
+      .input(z.object({ collabId: z.number(), userId: z.number(), message: z.string().trim().max(1000).optional() }))
+      .mutation(async ({ input, ctx }) => createCollaborationInvitation({ collaborationId: input.collabId, invitedUserId: input.userId, invitedByUserId: ctx.user.id, message: input.message })),
+
+    contributors: protectedProcedure
+      .input(z.object({ collabId: z.number() }))
+      .query(async ({ input }) => getCollaborationContributors(input.collabId)),
+
+    comments: protectedProcedure
+      .input(z.object({ collabId: z.number() }))
+      .query(async ({ input }) => getCollaborationComments(input.collabId)),
+
+    addLayer: protectedProcedure
+      .input(z.object({ collabId: z.number(), trackId: z.number() }))
+      .mutation(async ({ input, ctx }) => addCollaborationLayerRecord(input.collabId, input.trackId, ctx.user.id)),
+
+    updateLayer: protectedProcedure
+      .input(z.object({ layerId: z.number(), volume: z.number().min(0).max(1).optional(), pan: z.number().min(-1).max(1).optional() }))
+      .mutation(async ({ input, ctx }) => updateCollaborationLayerRecord(input.layerId, ctx.user.id, { volume: input.volume, pan: input.pan })),
+
+    removeLayer: protectedProcedure
+      .input(z.object({ layerId: z.number() }))
+      .mutation(async ({ input, ctx }) => removeCollaborationLayerRecord(input.layerId, ctx.user.id)),
+
+    addComment: protectedProcedure
+      .input(z.object({ collabId: z.number(), layerId: z.number().optional(), text: z.string().trim().min(1).max(5000) }))
+      .mutation(async ({ input, ctx }) => addCollaborationCommentRecord(input.collabId, input.layerId, ctx.user.id, input.text)),
+
+    invitations: protectedProcedure.query(async ({ ctx }) => getUserInvitations(ctx.user.id)),
+
+    respondToInvite: protectedProcedure
+      .input(z.object({ invitationId: z.number(), response: z.enum(["accepted", "declined"]) }))
+      .mutation(async ({ input, ctx }) => respondToCollaborationInvitation(input.invitationId, ctx.user.id, input.response)),
   }),
 
   // ============================================
@@ -165,30 +250,24 @@ export const appRouter = router({
       }),
 
     create: protectedProcedure
-      .input(
-        z.object({
-          title: z.string(),
-          description: z.string().optional(),
-          visibility: z.enum(["public", "private"]).default("private"),
-        })
-      )
-      .mutation(async ({ input, ctx }) => {
-        // TODO: Implement playlist creation
-        return {
-          success: true,
-          message: "Playlist creation endpoint ready for implementation",
-        };
-      }),
+      .input(z.object({ title: z.string().trim().min(1).max(255), description: z.string().trim().max(5000).optional(), visibility: z.enum(["public", "private"]).default("private") }))
+      .mutation(async ({ input, ctx }) => createPlaylistRecord({ creatorId: ctx.user.id, ...input })),
+
+    update: protectedProcedure
+      .input(z.object({ playlistId: z.number(), title: z.string().trim().min(1).max(255).optional(), description: z.string().trim().max(5000).nullable().optional(), visibility: z.enum(["public", "private"]).optional() }))
+      .mutation(async ({ input, ctx }) => updatePlaylistRecord(input.playlistId, ctx.user.id, { title: input.title, description: input.description, visibility: input.visibility })),
+
+    delete: protectedProcedure
+      .input(z.object({ playlistId: z.number() }))
+      .mutation(async ({ input, ctx }) => deletePlaylistRecord(input.playlistId, ctx.user.id)),
 
     addTrack: protectedProcedure
       .input(z.object({ playlistId: z.number(), trackId: z.number() }))
-      .mutation(async ({ input, ctx }) => {
-        // TODO: Implement add track to playlist
-        return {
-          success: true,
-          message: "Add track to playlist endpoint ready for implementation",
-        };
-      }),
+      .mutation(async ({ input, ctx }) => addTrackToPlaylistRecord(input.playlistId, input.trackId, ctx.user.id)),
+
+    removeTrack: protectedProcedure
+      .input(z.object({ playlistId: z.number(), trackId: z.number() }))
+      .mutation(async ({ input, ctx }) => removeTrackFromPlaylistRecord(input.playlistId, input.trackId, ctx.user.id)),
   }),
 
   // ============================================
@@ -208,13 +287,9 @@ export const appRouter = router({
 
     markAsRead: protectedProcedure
       .input(z.object({ notificationId: z.number() }))
-      .mutation(async ({ input, ctx }) => {
-        // TODO: Implement mark as read
-        return {
-          success: true,
-          message: "Mark notification as read endpoint ready for implementation",
-        };
-      }),
+      .mutation(async ({ input, ctx }) => markNotificationRead(input.notificationId, ctx.user.id)),
+
+    markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => markAllNotificationsRead(ctx.user.id)),
   }),
 
   // ============================================
@@ -223,53 +298,29 @@ export const appRouter = router({
   users: router({
     profile: publicProcedure
       .input(z.object({ userId: z.number() }))
-      .query(async ({ input }) => {
-        return await getUserProfile(input.userId);
-      }),
+      .query(async ({ input }) => ({ user: await getUserById(input.userId), profile: await getUserProfile(input.userId) })),
 
-    myProfile: protectedProcedure.query(async ({ ctx }) => {
-      return await getUserProfile(ctx.user.id);
-    }),
+    myProfile: protectedProcedure.query(async ({ ctx }) => ({ user: await getUserById(ctx.user.id), profile: await getUserProfile(ctx.user.id) })),
 
     updateProfile: protectedProcedure
-      .input(
-        z.object({
-          bio: z.string().optional(),
-          avatar: z.string().optional(),
-          website: z.string().optional(),
-          twitter: z.string().optional(),
-          instagram: z.string().optional(),
-          soundcloud: z.string().optional(),
-          location: z.string().optional(),
-        })
-      )
-      .mutation(async ({ input, ctx }) => {
-        // TODO: Implement profile update
-        return {
-          success: true,
-          message: "Profile update endpoint ready for implementation",
-        };
-      }),
+      .input(z.object({ bio: z.string().max(5000).nullable().optional(), avatar: z.string().url().nullable().optional(), website: z.string().url().nullable().optional(), twitter: z.string().max(255).nullable().optional(), instagram: z.string().max(255).nullable().optional(), soundcloud: z.string().max(255).nullable().optional(), location: z.string().max(255).nullable().optional() }))
+      .mutation(async ({ input, ctx }) => updateUserProfile(ctx.user.id, input)),
 
     follow: protectedProcedure
       .input(z.object({ userId: z.number() }))
-      .mutation(async ({ input, ctx }) => {
-        // TODO: Implement follow user
-        return {
-          success: true,
-          message: "Follow user endpoint ready for implementation",
-        };
-      }),
+      .mutation(async ({ input, ctx }) => followUser(ctx.user.id, input.userId)),
 
     unfollow: protectedProcedure
       .input(z.object({ userId: z.number() }))
-      .mutation(async ({ input, ctx }) => {
-        // TODO: Implement unfollow user
-        return {
-          success: true,
-          message: "Unfollow user endpoint ready for implementation",
-        };
-      }),
+      .mutation(async ({ input, ctx }) => unfollowUser(ctx.user.id, input.userId)),
+
+    following: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input, ctx }) => ({ following: await isFollowingUser(ctx.user.id, input.userId) })),
+
+    followers: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => getUserFollowers(input.userId)),
   }),
 
   // ============================================

@@ -1,499 +1,104 @@
-import { useState } from "react";
-import { Music, Users, MessageSquare, Plus, X, Volume2, Trash2, Download, Send, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useLocation } from "wouter";
+import { useMemo, useState } from "react";
+import { useLocation, useParams } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import { ArrowLeft, Download, Loader2, MessageSquare, Music, Plus, Send, Trash2, Users, Volume2, X } from "lucide-react";
 import { toast } from "sonner";
 
-/**
- * Collaboration Room Page
- * Multi-track project editing with layer management, commenting, chat, and export
- */
-
-interface CollaborationLayer {
-  id: number;
-  trackId: number;
-  trackTitle: string;
-  artistName: string;
-  volume: number;
-  pan: number;
-  order: number;
-  duration: number;
-}
-
-interface CollaborationProject {
-  id: number;
-  title: string;
-  description: string;
-  creatorName: string;
-  contributors: number;
-  status: "draft" | "in_progress" | "completed";
-  createdAt: string;
-  layers: CollaborationLayer[];
-}
-
-interface ChatMessage {
-  id: number;
-  author: string;
-  message: string;
-  timestamp: string;
-}
-
-const MOCK_PROJECT: CollaborationProject = {
-  id: 1,
-  title: "Neon Dreams - Remix Collab",
-  description: "Community remix of Neon Dreams with multiple artists contributing layers",
-  creatorName: "SynthWave Master",
-  contributors: 5,
-  status: "in_progress",
-  createdAt: "2026-07-15",
-  layers: [
-    {
-      id: 1,
-      trackId: 101,
-      trackTitle: "Synth Lead",
-      artistName: "SynthWave Master",
-      volume: 1.0,
-      pan: 0,
-      order: 1,
-      duration: 240,
-    },
-    {
-      id: 2,
-      trackId: 102,
-      trackTitle: "Drum Beat",
-      artistName: "Cyber Composer",
-      volume: 0.8,
-      pan: -0.3,
-      order: 2,
-      duration: 240,
-    },
-    {
-      id: 3,
-      trackId: 103,
-      trackTitle: "Bass Line",
-      artistName: "Digital Prophet",
-      volume: 0.9,
-      pan: 0.2,
-      order: 3,
-      duration: 240,
-    },
-  ],
-};
-
-const MOCK_CHAT_MESSAGES: ChatMessage[] = [
-  {
-    id: 1,
-    author: "SynthWave Master",
-    message: "Great start! Love the synth lead",
-    timestamp: "2:30 PM",
-  },
-  {
-    id: 2,
-    author: "Cyber Composer",
-    message: "Added some drums, let me know what you think",
-    timestamp: "2:45 PM",
-  },
-  {
-    id: 3,
-    author: "Digital Prophet",
-    message: "Bass line is ready! Should we adjust the mix?",
-    timestamp: "3:00 PM",
-  },
-];
+type LayerView = { id: number; trackId: number; title: string; artist: string; fileUrl: string; duration: number; volume: number; pan: number; startTime: number };
 
 export default function CollaborationRoom() {
+  const { collabId: collabIdParam } = useParams<{ collabId: string }>();
+  const collabId = Number(collabIdParam);
   const [, navigate] = useLocation();
-  const [project] = useState<CollaborationProject>(MOCK_PROJECT);
-  const [layers, setLayers] = useState<CollaborationLayer[]>(project.layers);
-  const [selectedLayer, setSelectedLayer] = useState<number | null>(layers[0]?.id || null);
-  const [showComments, setShowComments] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+  const utils = trpc.useUtils();
+  const [showAddLayer, setShowAddLayer] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(MOCK_CHAT_MESSAGES);
+  const [selectedLayerId, setSelectedLayerId] = useState<number | null>(null);
   const [chatInput, setChatInput] = useState("");
-  const [showExportModal, setShowExportModal] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewingLayer, setPreviewingLayer] = useState<CollaborationLayer | null>(null);
+  const [layerComment, setLayerComment] = useState("");
+  const [exporting, setExporting] = useState(false);
 
-  const selectedLayerData = layers.find((l) => l.id === selectedLayer);
+  const projectQuery = trpc.collaborations.byId.useQuery({ id: collabId }, { enabled: Number.isInteger(collabId) });
+  const layersQuery = trpc.collaborations.layers.useQuery({ collabId }, { enabled: Number.isInteger(collabId) });
+  const commentsQuery = trpc.collaborations.comments.useQuery({ collabId }, { enabled: Number.isInteger(collabId) && isAuthenticated, refetchInterval: 5000 });
+  const contributorsQuery = trpc.collaborations.contributors.useQuery({ collabId }, { enabled: Number.isInteger(collabId) && isAuthenticated });
+  const mineQuery = trpc.tracks.myTracks.useQuery(undefined, { enabled: isAuthenticated });
+  const joinMutation = trpc.collaborations.join.useMutation({ onSuccess: () => { utils.collaborations.contributors.invalidate({ collabId }); toast.success("You joined the collaboration"); }, onError: (error) => toast.error(error.message) });
+  const addLayerMutation = trpc.collaborations.addLayer.useMutation({ onSuccess: () => { utils.collaborations.layers.invalidate({ collabId }); utils.collaborations.comments.invalidate({ collabId }); setShowAddLayer(false); toast.success("Layer added"); }, onError: (error) => toast.error(error.message) });
+  const updateLayerMutation = trpc.collaborations.updateLayer.useMutation({ onSuccess: () => utils.collaborations.layers.invalidate({ collabId }), onError: (error) => toast.error(error.message) });
+  const removeLayerMutation = trpc.collaborations.removeLayer.useMutation({ onSuccess: () => { utils.collaborations.layers.invalidate({ collabId }); setSelectedLayerId(null); toast.success("Layer removed"); }, onError: (error) => toast.error(error.message) });
+  const addCommentMutation = trpc.collaborations.addComment.useMutation({ onSuccess: () => { utils.collaborations.comments.invalidate({ collabId }); setChatInput(""); setLayerComment(""); }, onError: (error) => toast.error(error.message) });
 
-  const updateLayerVolume = (layerId: number, volume: number) => {
-    setLayers(layers.map((l) => (l.id === layerId ? { ...l, volume } : l)));
+  const layers: LayerView[] = useMemo(() => (layersQuery.data ?? []).map((row) => ({ id: row.layer.id, trackId: row.track.id, title: row.track.title, artist: row.creator.name ?? "TuneCollab musician", fileUrl: row.track.fileUrl, duration: Number(row.track.duration ?? 0), volume: Number(row.layer.volume ?? 1), pan: Number(row.layer.pan ?? 0), startTime: Number(row.layer.startTime ?? 0) })), [layersQuery.data]);
+  const selectedLayer = layers.find((layer) => layer.id === selectedLayerId) ?? layers[0];
+  const existingTrackIds = new Set(layers.map((layer) => layer.trackId));
+  const comments = commentsQuery.data ?? [];
+  const chatComments = comments.filter((row) => row.comment.layerId == null);
+  const layerComments = selectedLayer ? comments.filter((row) => row.comment.layerId === selectedLayer.id) : [];
+  const project = projectQuery.data;
+
+  if (projectQuery.isLoading || layersQuery.isLoading) return <Loading />;
+  if (!project) return <Empty navigate={navigate} />;
+
+  const addComment = (layerId?: number) => {
+    if (!isAuthenticated) return toast.error("Please sign in to comment");
+    const text = (layerId ? layerComment : chatInput).trim();
+    if (!text) return;
+    addCommentMutation.mutate({ collabId, layerId, text });
   };
 
-  const updateLayerPan = (layerId: number, pan: number) => {
-    setLayers(layers.map((l) => (l.id === layerId ? { ...l, pan } : l)));
-  };
-
-  const removeLayer = (layerId: number) => {
-    setLayers(layers.filter((l) => l.id !== layerId));
-    if (selectedLayer === layerId) {
-      setSelectedLayer(layers[0]?.id || null);
+  async function exportMix() {
+    if (layers.length === 0) return toast.error("Add at least one layer before exporting");
+    setExporting(true);
+    try {
+      const blob = await mixLayersToWav(layers);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${project?.title?.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "tunecollab-mix"}.wav`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success("WAV mix downloaded");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "The browser could not render this mix");
+    } finally {
+      setExporting(false);
     }
-  };
+  }
 
-  const handleSendMessage = () => {
-    if (!chatInput.trim()) return;
+  return <div className="min-h-screen bg-background text-foreground"><header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/75 backdrop-blur-md"><div className="container flex min-h-16 items-center justify-between gap-3 px-3 sm:px-4"><button onClick={() => navigate("/collaborate")} className="flex items-center gap-2 text-gray-300 hover:text-cyan-300"><ArrowLeft size={18} /><span className="hidden sm:inline">Collaborations</span></button><span className="text-lg font-bold tracking-wider"><span className="neon-cyan">TUNE</span><span className="text-white">×</span><span className="neon-magenta">COLLAB</span></span><div className="flex items-center gap-2"><button onClick={() => setShowChat(!showChat)} className="rounded border border-cyan-400/30 px-3 py-2 text-sm text-cyan-300 hover:bg-cyan-400/10"><MessageSquare size={16} className="inline sm:mr-2" /><span className="hidden sm:inline">Chat</span></button><button onClick={exportMix} disabled={exporting} className="rounded bg-cyan-400 px-3 py-2 text-sm font-bold text-black hover:bg-cyan-300 disabled:opacity-60"><Download size={16} className="inline sm:mr-2" />{exporting ? "Mixing..." : "Export WAV"}</button></div></div></header><main className="container max-w-7xl px-3 pb-16 pt-24 sm:px-4"><section className="mb-6 rounded-lg border border-white/10 bg-white/5 p-5 sm:p-7"><div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><p className="mb-2 text-xs uppercase tracking-[0.3em] text-cyan-300">Collaboration room</p><h1 className="break-words text-2xl font-bold sm:text-4xl">{project.title}</h1><p className="mt-2 max-w-3xl text-gray-400">{project.description || "A shared multi-track project."}</p></div><span className="w-fit rounded border border-cyan-400/40 bg-cyan-400/10 px-3 py-1 text-xs uppercase text-cyan-300">{project.status ?? "draft"}</span></div><div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500"><span>Created {new Date(project.createdAt).toLocaleDateString()}</span><span><Users size={15} className="mr-1 inline" />{contributorsQuery.data?.length ?? 0} contributors</span><span>{layers.length} layers</span></div>{!isAuthenticated && <button onClick={() => navigate("/")} className="mt-5 rounded border border-fuchsia-400/40 px-4 py-2 text-sm text-fuchsia-300">Sign in to contribute</button>}{isAuthenticated && <button onClick={() => joinMutation.mutate({ collabId })} disabled={joinMutation.isPending} className="mt-5 rounded border border-cyan-400/40 px-4 py-2 text-sm text-cyan-300 hover:bg-cyan-400/10">{joinMutation.isPending ? "Joining..." : "Join / refresh membership"}</button>}</section><div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]"><section className="space-y-6"><div className="rounded-lg border border-white/10 bg-white/5 p-4 sm:p-6"><div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><h2 className="flex items-center gap-2 text-xl font-bold"><Music size={20} /> Layers</h2><p className="mt-1 text-sm text-gray-500">Adjust controls in the room; every change persists to the project.</p></div><button onClick={() => { if (!isAuthenticated) return toast.error("Please sign in to add a layer"); setShowAddLayer(true); }} className="flex items-center gap-2 rounded border border-cyan-400/40 px-3 py-2 text-sm text-cyan-300 hover:bg-cyan-400/10"><Plus size={16} /> Add layer</button></div>{layers.length === 0 ? <div className="rounded border border-dashed border-white/15 px-5 py-12 text-center text-gray-500">No layers yet. Add one of your uploaded tracks.</div> : <div className="space-y-3">{layers.map((layer) => <div key={layer.id} onClick={() => setSelectedLayerId(layer.id)} className={`rounded border p-4 ${selectedLayer?.id === layer.id ? "border-cyan-400/50 bg-cyan-400/10" : "border-white/10 bg-black/20"}`}><div className="flex flex-col gap-3 sm:flex-row sm:items-center"><div className="min-w-0 flex-1"><h3 className="truncate font-semibold">{layer.title}</h3><p className="text-sm text-gray-500">{layer.artist}</p></div><div className="flex items-center gap-2"><audio controls preload="none" src={layer.fileUrl} className="h-8 max-w-[190px]" /><button onClick={(event) => { event.stopPropagation(); removeLayerMutation.mutate({ layerId: layer.id }); }} className="rounded border border-red-400/30 p-2 text-red-300 hover:bg-red-400/10" aria-label={`Remove ${layer.title}`}><Trash2 size={16} /></button></div></div></div>)}</div>}</div>{selectedLayer && <div className="rounded-lg border border-white/10 bg-white/5 p-4 sm:p-6"><h2 className="mb-5 text-lg font-bold">Layer controls: {selectedLayer.title}</h2><div className="space-y-5"><label className="block"><span className="mb-2 flex items-center justify-between text-sm"><span><Volume2 size={16} className="mr-2 inline" />Volume</span><span className="text-cyan-300">{Math.round(selectedLayer.volume * 100)}%</span></span><input type="range" min="0" max="1" step="0.01" value={selectedLayer.volume} onChange={(event) => updateLayerMutation.mutate({ layerId: selectedLayer.id, volume: Number(event.target.value) })} className="w-full accent-cyan-400" /></label><label className="block"><span className="mb-2 flex items-center justify-between text-sm"><span>Pan</span><span className="text-fuchsia-300">{selectedLayer.pan < 0 ? "L" : selectedLayer.pan > 0 ? "R" : "C"} {Math.abs(selectedLayer.pan).toFixed(2)}</span></span><input type="range" min="-1" max="1" step="0.01" value={selectedLayer.pan} onChange={(event) => updateLayerMutation.mutate({ layerId: selectedLayer.id, pan: Number(event.target.value) })} className="w-full accent-fuchsia-400" /></label></div></div>}</section><aside className="space-y-6"><div className="rounded-lg border border-white/10 bg-white/5 p-4 sm:p-6"><h2 className="mb-4 flex items-center gap-2 text-lg font-bold"><Users size={18} /> Contributors</h2>{contributorsQuery.isLoading ? <p className="text-sm text-gray-500">Loading contributors...</p> : contributorsQuery.data?.length ? <div className="space-y-3">{contributorsQuery.data.map((row) => <div key={row.contributor.id} className="flex items-center justify-between gap-3"><span className="truncate text-sm">{row.user.name ?? "Musician"}</span><span className="text-xs uppercase text-gray-600">{row.contributor.role}</span></div>)}</div> : <p className="text-sm text-gray-500">No contributors yet.</p>}</div><div className="rounded-lg border border-white/10 bg-white/5 p-4 sm:p-6"><h2 className="mb-4 flex items-center gap-2 text-lg font-bold"><MessageSquare size={18} /> Layer feedback</h2>{!isAuthenticated ? <p className="text-sm text-gray-500">Sign in to view and add feedback.</p> : <><div className="max-h-56 space-y-3 overflow-y-auto">{layerComments.length ? layerComments.map((row) => <div key={row.comment.id} className="rounded bg-black/25 p-3 text-sm"><p className="font-semibold text-cyan-300">{row.user.name ?? "Musician"}</p><p className="mt-1 text-gray-300">{row.comment.text}</p></div>) : <p className="text-sm text-gray-600">No comments on this layer yet.</p>}</div>{selectedLayer && <div className="mt-4 flex gap-2"><input value={layerComment} onChange={(event) => setLayerComment(event.target.value)} placeholder="Leave layer feedback" className="min-w-0 flex-1 rounded border border-white/10 bg-black/30 px-3 py-2 text-sm text-white" /><button onClick={() => addComment(selectedLayer.id)} className="rounded bg-cyan-400 p-2 text-black" aria-label="Send layer feedback"><Send size={16} /></button></div>}</>}</div></aside></div></main>{showAddLayer && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4"><div className="w-full max-w-lg rounded-lg border border-white/15 bg-[#090909] p-5"><div className="mb-5 flex items-center justify-between"><h2 className="text-xl font-bold">Add your track</h2><button onClick={() => setShowAddLayer(false)} aria-label="Close add layer dialog"><X size={18} /></button></div>{(mineQuery.data ?? []).filter((track) => !existingTrackIds.has(track.id)).map((track) => <div key={track.id} className="mb-2 flex items-center justify-between gap-3 rounded border border-white/10 p-3"><span className="truncate text-sm">{track.title}</span><button onClick={() => addLayerMutation.mutate({ collabId, trackId: track.id })} disabled={addLayerMutation.isPending} className="rounded border border-cyan-400/40 px-3 py-2 text-sm text-cyan-300">Add</button></div>)}{(mineQuery.data ?? []).filter((track) => !existingTrackIds.has(track.id)).length === 0 && <p className="py-6 text-center text-sm text-gray-500">Upload a track first, or all of your tracks are already in this room.</p>}</div></div>}{showChat && <div className="fixed inset-x-2 bottom-2 z-50 flex h-[min(28rem,75vh)] flex-col rounded-lg border border-cyan-400/30 bg-[#080808] sm:inset-x-auto sm:right-4 sm:w-96"><div className="flex items-center justify-between border-b border-white/10 p-4"><h2 className="font-bold">Room chat</h2><button onClick={() => setShowChat(false)}><X size={18} /></button></div><div className="flex-1 space-y-3 overflow-y-auto p-4">{!isAuthenticated ? <p className="text-sm text-gray-500">Sign in to view chat.</p> : chatComments.length ? chatComments.map((row) => <div key={row.comment.id} className="text-sm"><p className="font-semibold text-cyan-300">{row.user.name ?? "Musician"}</p><p className="text-gray-300">{row.comment.text}</p><p className="mt-1 text-[10px] text-gray-600">{new Date(row.comment.createdAt).toLocaleTimeString()}</p></div>) : <p className="text-sm text-gray-600">No room messages yet.</p>}</div>{isAuthenticated && <div className="flex gap-2 border-t border-white/10 p-3"><input value={chatInput} onChange={(event) => setChatInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") addComment(); }} placeholder="Message collaborators" className="min-w-0 flex-1 rounded border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /><button onClick={() => addComment()} className="rounded bg-cyan-400 p-2 text-black" aria-label="Send chat message"><Send size={16} /></button></div>}</div>}</div>;
+}
 
-    const newMessage: ChatMessage = {
-      id: chatMessages.length + 1,
-      author: "You",
-      message: chatInput,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
+function Loading() { return <div className="flex min-h-screen items-center justify-center bg-background text-cyan-300"><Loader2 className="animate-spin" /></div>; }
+function Empty({ navigate }: { navigate: (path: string) => void }) { return <div className="flex min-h-screen items-center justify-center bg-background p-6 text-center"><div><p className="mb-5 text-gray-400">Collaboration not found.</p><button onClick={() => navigate("/collaborate")} className="rounded bg-cyan-400 px-4 py-2 font-bold text-black">Back to collaborations</button></div></div>; }
 
-    setChatMessages([...chatMessages, newMessage]);
-    setChatInput("");
-    toast.success("Message sent!");
-  };
+async function mixLayersToWav(layers: LayerView[]) {
+  const audioContext = new AudioContext();
+  const decoded = await Promise.all(layers.map(async (layer) => {
+    const response = await fetch(layer.fileUrl);
+    if (!response.ok) throw new Error(`Could not read ${layer.title}`);
+    return { layer, buffer: await audioContext.decodeAudioData(await response.arrayBuffer()) };
+  }));
+  const sampleRate = Math.max(...decoded.map(({ buffer }) => buffer.sampleRate), 44100);
+  const length = Math.ceil(Math.max(...decoded.map(({ layer, buffer }) => layer.startTime + buffer.duration)) * sampleRate);
+  const offline = new OfflineAudioContext(2, Math.max(length, sampleRate), sampleRate);
+  decoded.forEach(({ layer, buffer }) => { const source = offline.createBufferSource(); source.buffer = buffer; const gain = offline.createGain(); gain.gain.value = layer.volume; const pan = offline.createStereoPanner(); pan.pan.value = layer.pan; source.connect(gain).connect(pan).connect(offline.destination); source.start(Math.max(0, layer.startTime)); });
+  const rendered = await offline.startRendering();
+  await audioContext.close();
+  return encodeWav(rendered);
+}
 
-  const handleExportTrack = (format: "mp3" | "wav" | "flac") => {
-    toast.success(`Exporting as ${format.toUpperCase()}...`);
-    setTimeout(() => {
-      toast.success(`Downloaded: ${project.title}.${format}`);
-      setShowExportModal(false);
-    }, 2000);
-  };
-
-  const handlePreviewLayer = (layer: CollaborationLayer) => {
-    setPreviewingLayer(layer);
-    setShowPreview(true);
-    toast.success(`Playing: ${layer.trackTitle}`);
-  };
-
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 border-b border-white/10 bg-black/40 backdrop-blur-md">
-        <div className="container flex items-center justify-between h-16 px-3 sm:px-4 gap-2">
-          <button onClick={() => navigate("/collaborate")} className="flex items-center gap-2 hover:opacity-80 transition">
-            <div className="text-2xl font-bold neon-cyan">♪</div>
-            <span className="text-base sm:text-lg font-bold tracking-wider">TuneCollab</span>
-          </button>
-
-          <div className="flex items-center gap-2 sm:gap-4">
-            <button
-              onClick={() => setShowChat(!showChat)}
-              className="px-2 sm:px-4 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
-            >
-              <MessageSquare size={18} />
-              Chat
-            </button>
-            <button
-              onClick={() => setShowExportModal(true)}
-              className="px-2 sm:px-4 py-2 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
-            >
-              <Download size={18} />
-              Export
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="pt-20 sm:pt-24 pb-10 sm:pb-12 px-3 sm:px-4">
-        <div className="container max-w-7xl mx-auto">
-          {/* Project Header */}
-          <div className="mb-6 sm:mb-8 p-4 sm:p-6 border border-white/10 rounded-lg bg-white/5 min-w-0">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2">
-              <h1 className="text-2xl sm:text-3xl font-bold leading-tight break-words">{project.title}</h1>
-              <span className="px-3 py-1 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded text-sm font-semibold">
-                {project.status.replace("_", " ")}
-              </span>
-            </div>
-            <p className="text-gray-400 mb-3">{project.description}</p>
-            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-400">
-              <span>Created by {project.creatorName}</span>
-              <span>{project.contributors} contributors</span>
-              <span>Started {project.createdAt}</span>
-            </div>
-          </div>
-
-          {/* Main Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Layers Panel */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Layers Section */}
-              <div className="border border-white/10 rounded-lg p-4 sm:p-6 bg-white/5 min-w-0">
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                  <h2 className="text-xl font-bold flex items-center gap-2">
-                    <Music size={20} />
-                    Layers
-                  </h2>
-                  <button className="px-3 py-1 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition flex items-center gap-1 text-sm">
-                    <Plus size={16} />
-                    Add Layer
-                  </button>
-                </div>
-
-                <div className="space-y-2">
-                  {layers.map((layer) => (
-                    <div
-                      key={layer.id}
-                      onClick={() => setSelectedLayer(layer.id)}
-                      className={`p-3 sm:p-4 rounded border transition cursor-pointer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
-                        selectedLayer === layer.id
-                          ? "bg-cyan-400/20 border-cyan-400/50"
-                          : "bg-white/5 border-white/10 hover:bg-white/10"
-                      }`}
-                    >
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{layer.trackTitle}</h3>
-                        <p className="text-sm text-gray-400">{layer.artistName}</p>
-                      </div>
-
-                      <div className="flex items-center gap-2 sm:gap-3 self-end sm:self-auto">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePreviewLayer(layer);
-                          }}
-                          className="p-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition"
-                          title="Preview track"
-                        >
-                          <Play size={16} />
-                        </button>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeLayer(layer.id);
-                          }}
-                          className="p-2 bg-red-500/20 border border-red-500/50 text-red-400 rounded hover:bg-red-500/30 transition"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Layer Controls */}
-              {selectedLayerData && (
-                <div className="border border-white/10 rounded-lg p-4 sm:p-6 bg-white/5 min-w-0">
-                  <h3 className="text-lg font-bold mb-6">Layer Controls: {selectedLayerData.trackTitle}</h3>
-
-                  <div className="space-y-6">
-                    {/* Volume */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="flex items-center gap-2 font-semibold">
-                          <Volume2 size={18} />
-                          Volume
-                        </label>
-                        <span className="text-cyan-400">{Math.round(selectedLayerData.volume * 100)}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={selectedLayerData.volume}
-                        onChange={(e) => updateLayerVolume(selectedLayerData.id, parseFloat(e.target.value))}
-                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-cyan-400"
-                      />
-                    </div>
-
-                    {/* Pan */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="font-semibold">Pan</label>
-                        <span className="text-cyan-400">
-                          {selectedLayerData.pan > 0 ? "R" : selectedLayerData.pan < 0 ? "L" : "C"}{" "}
-                          {Math.abs(selectedLayerData.pan).toFixed(1)}
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min="-1"
-                        max="1"
-                        step="0.01"
-                        value={selectedLayerData.pan}
-                        onChange={(e) => updateLayerPan(selectedLayerData.id, parseFloat(e.target.value))}
-                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-magenta-400"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Right Sidebar */}
-            <div className="space-y-6">
-              {/* Comments Panel */}
-              <div className="border border-white/10 rounded-lg p-4 sm:p-6 bg-white/5 min-w-0">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <MessageSquare size={20} />
-                  Comments
-                </h3>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  <div className="text-sm text-gray-400 p-3 bg-white/5 rounded">
-                    <p className="font-semibold text-white">SynthWave Master</p>
-                    <p>Great synth work!</p>
-                  </div>
-                  <div className="text-sm text-gray-400 p-3 bg-white/5 rounded">
-                    <p className="font-semibold text-white">Cyber Composer</p>
-                    <p>Drums are locked in</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Project Info */}
-              <div className="border border-white/10 rounded-lg p-4 sm:p-6 bg-white/5 min-w-0">
-                <h3 className="text-lg font-bold mb-4">Project Info</h3>
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <p className="text-gray-400">Duration</p>
-                    <p className="font-semibold">4:00</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400">Layers</p>
-                    <p className="font-semibold">{layers.length}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400">Last Modified</p>
-                    <p className="font-semibold">Today at 2:30 PM</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* Chat Panel */}
-      {showChat && (
-        <div className="fixed inset-x-2 bottom-2 sm:inset-x-auto sm:right-0 sm:bottom-0 w-auto sm:w-96 h-[min(24rem,70vh)] bg-background border border-white/10 sm:border-l sm:border-t rounded-lg sm:rounded-tl-lg sm:rounded-tr-none sm:rounded-bl-none sm:rounded-br-none flex flex-col z-30">
-          <div className="p-4 border-b border-white/10 flex items-center justify-between">
-            <h3 className="font-bold flex items-center gap-2">
-              <MessageSquare size={18} />
-              Live Chat
-            </h3>
-            <button onClick={() => setShowChat(false)} className="p-1 hover:bg-white/10 rounded transition">
-              <X size={18} />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {chatMessages.map((msg) => (
-              <div key={msg.id} className="text-sm">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="font-semibold text-cyan-400">{msg.author}</p>
-                  <p className="text-xs text-gray-500">{msg.timestamp}</p>
-                </div>
-                <p className="text-gray-300">{msg.message}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="p-4 border-t border-white/10 flex gap-2">
-            <input
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-              placeholder="Type a message..."
-              className="flex-1 bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50"
-            />
-            <button
-              onClick={handleSendMessage}
-              className="p-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition"
-            >
-              <Send size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Export Modal */}
-      {showExportModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-background border border-white/10 rounded-lg p-4 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6">
-              <span className="neon-cyan">EXPORT</span>
-              <span className="text-white mx-2">×</span>
-              <span className="neon-magenta">MIX</span>
-            </h2>
-
-            <p className="text-gray-400 mb-6">Choose your export format:</p>
-
-            <div className="space-y-3 mb-6">
-              <button
-                onClick={() => handleExportTrack("mp3")}
-                className="w-full px-4 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition font-semibold"
-              >
-                Export as MP3 (Compressed)
-              </button>
-              <button
-                onClick={() => handleExportTrack("wav")}
-                className="w-full px-4 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition font-semibold"
-              >
-                Export as WAV (Lossless)
-              </button>
-              <button
-                onClick={() => handleExportTrack("flac")}
-                className="w-full px-4 py-3 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 rounded hover:bg-cyan-400/30 transition font-semibold"
-              >
-                Export as FLAC (High Quality)
-              </button>
-            </div>
-
-            <button
-              onClick={() => setShowExportModal(false)}
-              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition font-semibold"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Preview Modal */}
-      {showPreview && previewingLayer && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-background border border-white/10 rounded-lg p-4 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Now Playing</h2>
-              <button onClick={() => setShowPreview(false)} className="p-1 hover:bg-white/10 rounded transition">
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="text-center mb-6">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-cyan-400/20 to-magenta-400/20 rounded-lg flex items-center justify-center">
-                <Music size={48} className="text-cyan-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">{previewingLayer.trackTitle}</h3>
-              <p className="text-gray-400">{previewingLayer.artistName}</p>
-            </div>
-
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">Duration</span>
-                <span className="font-semibold">{Math.floor(previewingLayer.duration / 60)}:00</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">Volume</span>
-                <span className="font-semibold">{Math.round(previewingLayer.volume * 100)}%</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">Pan</span>
-                <span className="font-semibold">
-                  {previewingLayer.pan > 0 ? "Right" : previewingLayer.pan < 0 ? "Left" : "Center"}
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowPreview(false)}
-              className="w-full px-4 py-2 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black font-bold rounded hover:opacity-90 transition flex items-center justify-center gap-2"
-            >
-              <Play size={18} />
-              Play Full Preview
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+function encodeWav(buffer: AudioBuffer) {
+  const channels = 2;
+  const frameCount = buffer.length;
+  const output = new ArrayBuffer(44 + frameCount * channels * 2);
+  const view = new DataView(output);
+  const writeString = (offset: number, value: string) => Array.from(value).forEach((char, index) => view.setUint8(offset + index, char.charCodeAt(0)));
+  writeString(0, "RIFF"); view.setUint32(4, 36 + frameCount * channels * 2, true); writeString(8, "WAVE"); writeString(12, "fmt "); view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, channels, true); view.setUint32(24, buffer.sampleRate, true); view.setUint32(28, buffer.sampleRate * channels * 2, true); view.setUint16(32, channels * 2, true); view.setUint16(34, 16, true); writeString(36, "data"); view.setUint32(40, frameCount * channels * 2, true);
+  const channelData = Array.from({ length: channels }, (_, index) => buffer.getChannelData(Math.min(index, buffer.numberOfChannels - 1)));
+  let offset = 44;
+  for (let frame = 0; frame < frameCount; frame += 1) for (let channel = 0; channel < channels; channel += 1) { const sample = Math.max(-1, Math.min(1, channelData[channel][frame])); view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true); offset += 2; }
+  return new Blob([output], { type: "audio/wav" });
 }

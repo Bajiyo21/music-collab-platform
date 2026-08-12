@@ -19,8 +19,8 @@
 
 ## Phase 3: Authentication System
 - [ ] Implement login flow with Manus OAuth
-- [ ] Implement signup flow with user profile creation
-- [ ] Create user onboarding form (avatar, bio, social links)
+- [x] Implement signup flow with user profile creation through Manus OAuth profile initialization
+- [x] Implement a first-run onboarding form for new users (avatar, bio, social links)
 - [ ] Add logout functionality
 - [ ] Create auth guards for protected routes
 - [ ] Add session persistence and error handling
@@ -38,21 +38,23 @@
 
 ## Phase 5: File Storage & Upload System
 - [x] Set up S3 storage integration for audio files (server endpoint uses storagePut)
-- [ ] Set up S3 storage integration for cover art images
+- [x] Set up S3 storage integration for cover art images
 - [x] Create file upload API endpoints (authenticated multipart endpoint and Upload.tsx client flow)
 - [x] Implement audio file validation (audio MIME validation plus 100MB server limit)
-- [ ] Implement image file validation (jpg, png, webp)
+- [x] Implement image file validation (jpg, png, webp)
 - [x] Create upload progress tracking (progress bar implemented)
 - [x] Add error handling for failed uploads (validation and error handling added)
 
 ## Phase 6: Track Management
-- [x] Create track upload page with form (title, description, genre, tags, cover art) (Upload.tsx created)
+- [x] Create track upload page with form (title, description, genre, tags, cover art)
+- [x] Add a tags input to Upload.tsx and submit/persist user-provided tags alongside genre and cover art
+- [x] Add regression coverage for multipart uploads with cover art plus explicit tags persistence
 - [ ] Implement AI-powered metadata generation (descriptions, tags, genre suggestions)
-- [ ] Create track detail page with metadata display
-- [ ] Implement track edit functionality
-- [ ] Implement track deletion with confirmation
-- [ ] Create user's track library/management page
-- [ ] Add track visibility settings (public/private)
+- [x] Implement track detail page with metadata display
+- [x] Implement track edit functionality with owner-checked persisted mutation and Dashboard dialog
+- [x] Implement track deletion with confirmation and dependent metadata cleanup
+- [x] Create user's track library/management page in the Dashboard tracks tab
+- [x] Add track visibility settings (public/private/unlisted)
 
 ## Phase 7: Audio Player & Waveform Visualizer
 - [x] Create interactive audio player component (AudioPlayer.tsx created)
@@ -62,8 +64,8 @@
 - [x] Add volume control with slider
 - [ ] Add queue management (next/previous)
 - [ ] Implement shuffle and repeat modes
-- [ ] Add current time and duration display
-- [ ] Add keyboard shortcuts (space for play/pause, arrow keys for seek)
+- [x] Add current time and duration display
+- [x] Add keyboard shortcuts (space for play/pause, arrow keys for seek)
 
 ## Phase 8: Discovery & Explore Page
 - [x] Create explore page layout with filters sidebar
@@ -71,9 +73,10 @@
 - [x] Implement search functionality (tracks, artists, playlists)
 - [x] Create trending tracks section
 - [ ] Create recommended artists section
-- [ ] Implement pagination for search results
-- [ ] Add sorting options (newest, most popular, trending)
-- [ ] Create infinite scroll or load-more functionality
+- [x] Implement real pagination for search results with server-side page offsets
+- [x] Add sorting options (newest, most popular, trending)
+- [x] Add regression tests for search pagination and preserved filters/sort state
+- [x] Create infinite scroll or load-more functionality (Load more button over the paginated result set)
 
 ## Phase 9: User Profiles
 - [x] Create user profile page template (Profile.tsx created)
@@ -82,47 +85,47 @@
 - [x] Display user's collaborations (tab structure)
 - [x] Display followers/following counts and lists
 - [x] Add follow/unfollow button
-- [ ] Implement edit profile for own profile
+- [x] Implement edit profile for own profile
 - [ ] Add profile view statistics
 
 ## Phase 10: Collaboration System
 - [x] Create collaboration project creation page (CollaborationHub modal backed by persisted mutation)
 - [x] Implement collaboration room/project detail page (CollaborationRoom.tsx created)
 - [x] Add invite collaborators functionality (foundation ready)
-- [ ] Create invitation acceptance/rejection flow
+- [x] Create invitation acceptance/rejection flow in the notifications inbox
 - [x] Implement track/stem sharing within collaboration (layer system)
 - [x] Add per-track comments in collaboration (comments panel)
-- [ ] Create collaboration visibility settings
+- [x] Implement collaboration visibility settings (public/private/invited)
 - [ ] Implement collaboration deletion and member management
 
 ## Phase 11: Playlists
-- [ ] Create playlist creation page
-- [ ] Implement add/remove tracks from playlist
-- [ ] Create playlist detail page with track list
-- [ ] Implement playlist editing (name, description)
-- [ ] Add playlist sharing functionality
-- [ ] Implement playlist deletion
-- [ ] Add playlist visibility settings (public/private)
-- [ ] Create user's playlist library page
+- [x] Create playlist creation page with persisted modal form
+- [x] Implement add/remove tracks from playlist
+- [x] Create playlist detail page with track list and playback
+- [x] Implement playlist editing (name, description)
+- [x] Add playlist sharing functionality
+- [x] Implement playlist deletion
+- [x] Add playlist visibility settings (public/private)
+- [x] Create user's playlist library page
 
 ## Phase 12: Social Features
-- [ ] Implement like functionality for tracks
+- [x] Implement like functionality for tracks
 - [ ] Implement like functionality for playlists
-- [ ] Create comment system for tracks
-- [ ] Create comment system for collaborations
+- [x] Create comment system for tracks
+- [x] Create comment system for collaborations
 - [ ] Implement comment deletion and editing
-- [ ] Add share buttons (copy link, social media)
+- [x] Add explicit social-media share actions alongside copy-link sharing
 - [ ] Create activity feed or recent activity section
-- [ ] Implement like/comment counts display
+- [x] Implement like/comment counts display
 
 ## Phase 13: Notifications System
-- [ ] Set up notification database model
-- [ ] Implement in-app notifications display
-- [ ] Create notification bell icon with unread count
-- [ ] Implement notification center/inbox page
-- [ ] Add mark as read functionality
+- [x] Set up notification database model
+- [x] Implement in-app notifications display
+- [x] Create notification bell icon with unread count
+- [x] Implement notification center/inbox page
+- [x] Add mark as read functionality
 - [ ] Implement email notification integration (optional)
-- [ ] Create notification types: collaboration invite, comment, new track in collab
+- [x] Create notification types for collaboration invite, comment, and new track in collaboration
 - [ ] Add notification preferences/settings
 
 ## Phase 14: Advanced UI Polish
@@ -175,3 +178,7 @@
 - [x] Add explicit mobile-responsive layout fixes to CollaborationRoom.tsx (header/actions, track panels, chat/export controls, overflow)
 - [x] Re-run phone and desktop verification after updating Explore and CollaborationRoom responsive layouts
 - [x] Clarify upload copyright copy so SHA-256 is described as exact-duplicate/integrity protection, not a legal ownership guarantee
+- [x] Fix mobile title wrapping on Explore, Collaboration Hub, Notifications, and Playlists
+- [x] Improve dashboard mobile tab navigation so the active controls remain discoverable without clipped labels
+- [x] Fix the Explore mobile header authentication button contrast so its label remains visible
+- [x] Remove the Vite warning caused by Google Fonts importing after tw-animate-css output

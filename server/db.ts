@@ -1,9 +1,10 @@
-import { eq, and, desc, like, sql, inArray } from "drizzle-orm";
+import { eq, and, desc, like, sql, inArray, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
   users,
   userProfiles,
+  userFollows,
   tracks,
   collaborations,
   playlists,
@@ -15,6 +16,8 @@ import {
   playlistTracks,
   collaborationContributors,
   collaborationLayers,
+  collaborationInvitations,
+  playlistLikes,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -155,28 +158,28 @@ export async function getTrendingTracks(limit: number = 10) {
   if (!db) return [];
 
   return await db
-    .select()
+    .select({ track: tracks, creator: users, genre: genres })
     .from(tracks)
+    .innerJoin(users, eq(users.id, tracks.creatorId))
+    .leftJoin(genres, eq(genres.id, tracks.genreId))
     .where(eq(tracks.visibility, "public"))
     .orderBy(desc(tracks.plays), desc(tracks.likes), desc(tracks.createdAt))
     .limit(limit);
 }
 
-export async function searchTracks(query: string, limit: number = 20) {
+export async function searchTracks(query: string, limit: number = 20, offset: number = 0) {
   const db = await getDb();
   if (!db) return [];
 
   return await db
-    .select()
+    .select({ track: tracks, creator: users, genre: genres })
     .from(tracks)
-    .where(
-      and(
-        eq(tracks.visibility, "public"),
-        like(tracks.title, `%${query}%`)
-      )
-    )
+    .innerJoin(users, eq(users.id, tracks.creatorId))
+    .leftJoin(genres, eq(genres.id, tracks.genreId))
+    .where(and(eq(tracks.visibility, "public"), or(like(tracks.title, `%${query}%`), like(users.name, `%${query}%`))))
     .orderBy(desc(tracks.createdAt))
-    .limit(limit);
+    .limit(limit)
+    .offset(offset);
 }
 
 export async function getUserTracks(userId: number) {
@@ -208,8 +211,9 @@ export async function getTrackComments(trackId: number) {
   if (!db) return [];
 
   return await db
-    .select()
+    .select({ comment: trackComments, user: users })
     .from(trackComments)
+    .innerJoin(users, eq(users.id, trackComments.userId))
     .where(eq(trackComments.trackId, trackId))
     .orderBy(desc(trackComments.createdAt));
 }
@@ -247,8 +251,10 @@ export async function getCollaborationLayers(collabId: number) {
   if (!db) return [];
 
   return await db
-    .select()
+    .select({ layer: collaborationLayers, track: tracks, creator: users })
     .from(collaborationLayers)
+    .innerJoin(tracks, eq(tracks.id, collaborationLayers.trackId))
+    .innerJoin(users, eq(users.id, tracks.creatorId))
     .where(eq(collaborationLayers.collaborationId, collabId))
     .orderBy(sql`\`order\``);
 }
@@ -286,8 +292,9 @@ export async function getPlaylistTracks(playlistId: number) {
   if (!db) return [];
 
   return await db
-    .select()
+    .select({ playlistTrack: playlistTracks, track: tracks })
     .from(playlistTracks)
+    .innerJoin(tracks, eq(tracks.id, playlistTracks.trackId))
     .where(eq(playlistTracks.playlistId, playlistId))
     .orderBy(sql`\`order\``);
 }
@@ -346,7 +353,10 @@ export async function createTrackRecord(input: {
   fileHash: string;
   mimeType: string;
   fileSize: number;
+  coverArtKey?: string | null;
+  coverArtUrl?: string | null;
   tags?: string[];
+  visibility?: "public" | "private" | "unlisted";
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database is not available");
@@ -360,9 +370,11 @@ export async function createTrackRecord(input: {
     fileHash: input.fileHash,
     mimeType: input.mimeType,
     fileSize: input.fileSize,
+    coverArtKey: input.coverArtKey ?? null,
+    coverArtUrl: input.coverArtUrl ?? null,
     tags: input.tags ?? [],
     license: "all-rights-reserved",
-    visibility: "public",
+    visibility: input.visibility ?? "public",
   });
 
   const insertId = Number((result as any).insertId ?? (result as any)[0]?.insertId);
