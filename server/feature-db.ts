@@ -363,8 +363,15 @@ export async function removeCollaborationLayerRecord(layerId: number, userId: nu
   if (!db) throw new Error("Database is not available");
   const layer = await db.select().from(collaborationLayers).where(eq(collaborationLayers.id, layerId)).limit(1);
   if (!layer[0]) throw new Error("Layer not found");
-  const member = await db.select().from(collaborationContributors).where(and(eq(collaborationContributors.collaborationId, layer[0].collaborationId), eq(collaborationContributors.userId, userId))).limit(1);
-  if (!member[0]) throw new Error("Join the collaboration before removing a layer");
+  
+  const collab = await db.select({ creatorId: collaborations.creatorId }).from(collaborations).where(eq(collaborations.id, layer[0].collaborationId)).limit(1);
+  const isCollabOwner = collab[0]?.creatorId === userId;
+  const isLayerCreator = layer[0].addedById === userId;
+
+  if (!isCollabOwner && !isLayerCreator) {
+    throw new Error("Only the project owner or the musician who added this track can remove it.");
+  }
+
   await db.delete(collaborationLayers).where(eq(collaborationLayers.id, layerId));
   return { deleted: true };
 }

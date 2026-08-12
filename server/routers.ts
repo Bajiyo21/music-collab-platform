@@ -21,6 +21,9 @@ import {
   getUserProfile,
   findTrackByHash,
   createCollaborationRecord,
+  getUserFavorites,
+  isTrackFavorited,
+  toggleTrackFavorite,
 } from "./db";
 import { z } from "zod";
 import {
@@ -149,6 +152,22 @@ export const appRouter = router({
         return existing
           ? { isDuplicate: true, trackId: existing.id, title: existing.title }
           : { isDuplicate: false };
+      }),
+
+    favorites: protectedProcedure.query(async ({ ctx }) => {
+      return await getUserFavorites(ctx.user.id);
+    }),
+
+    isFavorited: protectedProcedure
+      .input(z.object({ trackId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        return await isTrackFavorited(ctx.user.id, input.trackId);
+      }),
+
+    toggleFavorite: protectedProcedure
+      .input(z.object({ trackId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        return await toggleTrackFavorite(ctx.user.id, input.trackId);
       }),
   }),
 

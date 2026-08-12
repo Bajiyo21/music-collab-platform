@@ -182,3 +182,11 @@
 - [x] Improve dashboard mobile tab navigation so the active controls remain discoverable without clipped labels
 - [x] Fix the Explore mobile header authentication button contrast so its label remains visible
 - [x] Remove the Vite warning caused by Google Fonts importing after tw-animate-css output
+
+## Phase 17: User Requested Enhancements (Favorites, Comments, Waveform, Contributor Deletion, Skill Creator)
+- [x] Remove track deletion button/option for non-owner contributors in collaboration rooms
+- [x] Implement persistent favorites table & tRPC endpoints (toggleFavorite, listFavorites)
+- [x] Add favorite heart button on track cards & dedicated Favorites tab in Dashboard
+- [x] Enhance AudioPlayer with a real-time interactive waveform visualizer canvas
+- [x] Add robust track comment section beneath each track in detail/player view
+- [x] Create reusable music collaboration platform skill via skill-creator

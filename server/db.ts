@@ -18,6 +18,7 @@ import {
   collaborationLayers,
   collaborationInvitations,
   playlistLikes,
+  trackFavorites,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -218,6 +219,8 @@ export async function getTrackComments(trackId: number) {
     .orderBy(desc(trackComments.createdAt));
 }
 
+
+
 // ============================================
 // COLLABORATION OPERATIONS
 // ============================================
@@ -297,6 +300,67 @@ export async function getPlaylistTracks(playlistId: number) {
     .innerJoin(tracks, eq(tracks.id, playlistTracks.trackId))
     .where(eq(playlistTracks.playlistId, playlistId))
     .orderBy(sql`\`order\``);
+}
+
+// ============================================
+// FAVORITES & COMMENTS OPERATIONS
+// ============================================
+
+export async function getUserFavorites(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const results = await db
+    .select({ favorite: trackFavorites, track: tracks, creator: users })
+    .from(trackFavorites)
+    .innerJoin(tracks, eq(tracks.id, trackFavorites.trackId))
+    .innerJoin(users, eq(users.id, tracks.creatorId))
+    .where(eq(trackFavorites.userId, userId))
+    .orderBy(desc(trackFavorites.createdAt));
+
+  return results;
+}
+
+export async function isTrackFavorited(userId: number, trackId: number) {
+  const db = await getDb();
+  if (!db) return false;
+
+  const res = await db
+    .select()
+    .from(trackFavorites)
+    .where(and(eq(trackFavorites.userId, userId), eq(trackFavorites.trackId, trackId)))
+    .limit(1);
+
+  return res.length > 0;
+}
+
+export async function toggleTrackFavorite(userId: number, trackId: number) {
+  const db = await getDb();
+  if (!db) return { favorited: false };
+
+  const existing = await db
+    .select()
+    .from(trackFavorites)
+    .where(and(eq(trackFavorites.userId, userId), eq(trackFavorites.trackId, trackId)))
+    .limit(1);
+
+  if (existing.length > 0) {
+    await db.delete(trackFavorites).where(and(eq(trackFavorites.userId, userId), eq(trackFavorites.trackId, trackId)));
+    return { favorited: false };
+  } else {
+    await db.insert(trackFavorites).values({ userId, trackId });
+    return { favorited: true };
+  }
+}
+
+
+
+export async function addTrackComment(trackId: number, userId: number, text: string) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const [result] = await db.insert(trackComments).values({ trackId, userId, text });
+  return result;
 }
 
 // ============================================

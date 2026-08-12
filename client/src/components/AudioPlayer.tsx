@@ -10,10 +10,6 @@ interface AudioPlayerProps {
   onPause?: () => void;
 }
 
-/**
- * Advanced Audio Player with Waveform Visualizer.
- * Features: play/pause, keyboard and button seeking, volume control, and real metadata duration.
- */
 export function AudioPlayer({
   trackTitle,
   artistName,
@@ -34,7 +30,7 @@ export function AudioPlayer({
     const bars = 60;
     const data = Array.from({ length: bars }, () => Math.random() * 0.8 + 0.2);
     setWaveformData(data);
-  }, []);
+  }, [audioUrl]);
 
   useEffect(() => {
     setTrackDuration(duration);
@@ -84,21 +80,20 @@ export function AudioPlayer({
       const barHeight = value * height;
       const x = index * barWidth;
       const y = (height - barHeight) / 2;
+      const progressRatio = trackDuration > 0 ? currentTime / trackDuration : 0;
+      const isPlayed = (index / waveformData.length) <= progressRatio;
+
       const gradient = ctx.createLinearGradient(x, y, x, y + barHeight);
-      gradient.addColorStop(0, "rgba(0, 255, 255, 0.8)");
-      gradient.addColorStop(0.5, "rgba(0, 200, 200, 0.6)");
-      gradient.addColorStop(1, "rgba(0, 150, 150, 0.4)");
+      if (isPlayed) {
+        gradient.addColorStop(0, "rgba(255, 0, 255, 0.9)");
+        gradient.addColorStop(1, "rgba(0, 255, 255, 0.9)");
+      } else {
+        gradient.addColorStop(0, "rgba(0, 255, 255, 0.5)");
+        gradient.addColorStop(1, "rgba(0, 150, 150, 0.3)");
+      }
       ctx.fillStyle = gradient;
       ctx.fillRect(x + 1, y, Math.max(1, barWidth - 2), barHeight);
     });
-
-    const playheadX = trackDuration > 0 ? (currentTime / trackDuration) * width : 0;
-    ctx.strokeStyle = "rgba(255, 0, 255, 0.8)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(playheadX, 0);
-    ctx.lineTo(playheadX, height);
-    ctx.stroke();
   }, [waveformData, currentTime, trackDuration]);
 
   const togglePlay = () => {
@@ -173,12 +168,7 @@ export function AudioPlayer({
         className="h-20 w-full cursor-pointer rounded bg-gradient-to-b from-cyan-500/10 to-transparent transition hover:from-cyan-500/20"
       />
 
-      <div className="flex justify-between text-xs text-muted-foreground">
-        <span>{formatTime(currentTime)}</span>
-        <span>{formatTime(trackDuration)}</span>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <button aria-label="Seek back 5 seconds" onClick={() => seekBy(-5)} className="rounded p-2 text-muted-foreground transition hover:bg-white/10 hover:text-cyan-400">
             <SkipBack className="h-5 w-5" />
@@ -195,6 +185,10 @@ export function AudioPlayer({
           <button aria-label="Seek forward 5 seconds" onClick={() => seekBy(5)} className="rounded p-2 text-muted-foreground transition hover:bg-white/10 hover:text-cyan-400">
             <SkipForward className="h-5 w-5" />
           </button>
+
+          <span className="ml-2 text-xs text-muted-foreground">
+            {formatTime(currentTime)} / {formatTime(trackDuration)}
+          </span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -220,17 +214,15 @@ export function AudioPlayer({
       <audio
         ref={audioRef}
         src={audioUrl}
-        preload="metadata"
-        onLoadedMetadata={(event) => {
-          const metadataDuration = event.currentTarget.duration;
-          if (Number.isFinite(metadataDuration) && metadataDuration > 0) setTrackDuration(metadataDuration);
-          event.currentTarget.volume = volume;
+        onTimeUpdate={() => {
+          if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
         }}
-        onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
-        onEnded={() => {
-          setIsPlaying(false);
-          setCurrentTime(0);
+        onLoadedMetadata={() => {
+          if (audioRef.current && Number.isFinite(audioRef.current.duration)) {
+            setTrackDuration(audioRef.current.duration);
+          }
         }}
+        onEnded={() => setIsPlaying(false)}
       />
     </div>
   );

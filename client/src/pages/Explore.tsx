@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -25,8 +25,18 @@ export default function Explore() {
   const tracksQuery = trpc.tracks.trending.useQuery({ limit: 50 }, { enabled: !isSearchMode });
   const searchQueryResult = trpc.tracks.search.useQuery({ query: searchQuery.trim(), limit: SEARCH_PAGE_SIZE, offset: searchPage * SEARCH_PAGE_SIZE }, { enabled: isSearchMode, staleTime: 30_000 });
   const [searchResults, setSearchResults] = useState<NonNullable<typeof tracksQuery.data>>([]);
-  const likeMutation = trpc.tracks.like.useMutation({
-    onSuccess: (_, input) => setLikedTrackIds((current) => current.includes(input.trackId) ? current.filter((id) => id !== input.trackId) : [...current, input.trackId]),
+  const favoritesQuery = trpc.tracks.favorites.useQuery(undefined, { enabled: isAuthenticated });
+  const [favoriteTrackIds, setFavoriteTrackIds] = useState<number[]>([]);
+  useEffect(() => {
+    if (favoritesQuery.data) {
+      setFavoriteTrackIds(favoritesQuery.data.map((f: { track: { id: number } }) => f.track.id));
+    }
+  }, [favoritesQuery.data]);
+  const favoriteMutation = trpc.tracks.toggleFavorite.useMutation({
+    onSuccess: (data, input) => {
+      setFavoriteTrackIds((current) => data.favorited ? [...current, input.trackId] : current.filter((id) => id !== input.trackId));
+      toast.success(data.favorited ? "Added to favorites" : "Removed from favorites");
+    },
     onError: (error) => toast.error(error.message),
   });
   useEffect(() => {
@@ -116,7 +126,7 @@ export default function Explore() {
                 <div className="mt-4 flex flex-wrap gap-2">{genre?.name && <span className="rounded border border-cyan-400/30 bg-cyan-400/10 px-2 py-1 text-xs text-cyan-300">{genre.name}</span>}<span className="rounded border border-white/10 px-2 py-1 text-xs text-gray-500">{Math.floor(Number(track.duration ?? 0) / 60)}:{String(Number(track.duration ?? 0) % 60).padStart(2, "0")}</span></div>
                 {playingTrackId === track.id && track.fileUrl && <audio autoPlay controls src={track.fileUrl} onEnded={() => setPlayingTrackId(null)} className="mt-4 h-9 w-full" />}
                 <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-sm text-gray-500">
-                  <div className="flex gap-4"><button onClick={() => { if (!isAuthenticated) return toast.error("Sign in to like tracks"); likeMutation.mutate({ trackId: track.id }); }} className={`flex items-center gap-1 hover:text-fuchsia-300 ${likedTrackIds.includes(track.id) ? "text-fuchsia-300" : ""}`}><Heart size={16} fill={likedTrackIds.includes(track.id) ? "currentColor" : "none"} />{Number(track.likes ?? 0) + (likedTrackIds.includes(track.id) ? 1 : 0)}</button><button onClick={() => navigate(`/track/${track.id}`)} className="flex items-center gap-1 hover:text-cyan-300"><MessageCircle size={16} />{Number(track.comments ?? 0)}</button></div>
+                  <div className="flex gap-4"><button onClick={() => { if (!isAuthenticated) return toast.error("Sign in to favorite tracks"); favoriteMutation.mutate({ trackId: track.id }); }} className={`flex items-center gap-1 hover:text-fuchsia-300 ${favoriteTrackIds.includes(track.id) ? "text-fuchsia-300" : ""}`} aria-label={`Favorite ${track.title}`}><Heart size={16} fill={favoriteTrackIds.includes(track.id) ? "currentColor" : "none"} /><span>Favorite</span></button><button onClick={() => navigate(`/track/${track.id}`)} className="flex items-center gap-1 hover:text-cyan-300"><MessageCircle size={16} />{Number(track.comments ?? 0)}</button></div>
                   <button onClick={() => shareTrack(track.title, track.id)} className="hover:text-cyan-300" aria-label={`Share ${track.title}`}><Share2 size={16} /></button>
                 </div>
               </div>

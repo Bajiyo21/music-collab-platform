@@ -398,6 +398,21 @@ export const notifications = mysqlTable(
   })
 );
 
+export const trackFavorites = mysqlTable(
+  "track_favorites",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    trackId: int("trackId").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => ({
+    userTrackFavoriteIdx: index("user_track_favorite_idx").on(table.userId, table.trackId),
+  })
+);
+
+
+
 // ============================================
 // TYPE EXPORTS
 // ============================================
@@ -425,3 +440,9 @@ export type InsertNotification = typeof notifications.$inferInsert;
 
 export type Instrument = typeof instruments.$inferSelect;
 export type Genre = typeof genres.$inferSelect;
+
+export type TrackFavorite = typeof trackFavorites.$inferSelect;
+export type InsertTrackFavorite = typeof trackFavorites.$inferInsert;
+
+export type TrackComment = typeof trackComments.$inferSelect;
+export type InsertTrackComment = typeof trackComments.$inferInsert;
