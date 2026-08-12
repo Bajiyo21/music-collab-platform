@@ -29,14 +29,14 @@ export default function Home() {
           </div>
 
           <nav className="hidden items-center gap-8 md:flex">
-            <button onClick={handleExplore} className="text-sm hover:text-cyan-400 transition">
+            <button onClick={handleExplore} className="text-sm text-gray-300 hover:text-cyan-400 transition">
               Explore
             </button>
-            <a href="#features" className="text-sm hover:text-cyan-400 transition">
+            <button onClick={() => navigate("/ai-studio")} className="text-sm text-cyan-300 hover:text-cyan-200 transition font-medium flex items-center gap-1.5">
+              ✨ AI Studio
+            </button>
+            <a href="#features" className="text-sm text-gray-300 hover:text-cyan-400 transition">
               Features
-            </a>
-            <a href="#about" className="text-sm hover:text-cyan-400 transition">
-              About
             </a>
           </nav>
 
@@ -110,9 +110,24 @@ export default function Home() {
           </div>
 
           {/* Status */}
-          <div className="flex flex-wrap items-center justify-center gap-2 text-center text-xs text-muted-foreground sm:text-sm">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-center text-xs text-muted-foreground sm:text-sm mb-12">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
             <span>System Online • Ready to Collaborate</span>
+          </div>
+
+          {/* Cover Art Banner */}
+          <div className="relative overflow-hidden rounded-xl border border-cyan-400/30 shadow-2xl bg-black/60 aspect-[16/9] max-w-3xl mx-auto flex items-center justify-center">
+            <img 
+              src="/manus-storage/tunecollab-cover_98725fc4.png" 
+              alt="TuneCollab Cyberpunk Cover Art" 
+              className="absolute inset-0 h-full w-full object-cover opacity-90 transition-transform duration-700 hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-6">
+              <div className="text-left">
+                <span className="text-xs uppercase tracking-widest text-cyan-300 font-mono">Official Cover Visual</span>
+                <h3 className="text-xl font-extrabold tracking-tight text-white">Cybernetic Soundwaves & Studio Ecosystem</h3>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -135,23 +150,31 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 bg-black/20 border-t border-white/10">
-        <div className="container max-w-5xl mx-auto">
-          <h2 className="text-4xl font-bold mb-16 text-center">
-            <span className="neon-cyan">FEATURES</span>
-          </h2>
+      <section id="features" className="py-24 px-4 bg-gradient-to-b from-black/40 to-black/80 border-t border-white/10">
+        <div className="container max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="text-xs uppercase tracking-[0.3em] text-cyan-400 font-mono">Next-Gen Architecture</span>
+            <h2 className="text-3xl sm:text-5xl font-black mt-2 tracking-tight">
+              <span className="neon-cyan">POWERFUL FEATURES</span>
+            </h2>
+            <p className="text-gray-400 mt-3 max-w-xl mx-auto text-sm sm:text-base">
+              Engineered for professional musicians, producers, and audio collaborators seeking absolute precision and speed.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Music, title: "Upload Tracks", desc: "Share your music with the world" },
-              { icon: Users, title: "Collaborate", desc: "Work with musicians globally" },
-              { icon: Headphones, title: "Discover", desc: "Find trending music & artists" },
-              { icon: Zap, title: "Real-time", desc: "Instant feedback & notifications" },
+              { icon: Music, title: "Secure Uploads", desc: "SHA-256 copyright verification & lossless stems" },
+              { icon: Users, title: "Real-time Collab", desc: "Multi-track room layers, chat & stem mixing" },
+              { icon: Headphones, title: "AI Studio", desc: "Automated analysis, chord progressions & TuneAI chat" },
+              { icon: Zap, title: "Instant Discovery", desc: "Trending charts, genre tags & persistent favorites" },
             ].map((feature, i) => (
-              <div key={i} className="bg-black/40 backdrop-blur-md border border-white/10 rounded p-6 hover:border-cyan-400/50 transition-all group">
-                <feature.icon className="w-8 h-8 text-cyan-400 mb-4 group-hover:text-magenta-400 transition" />
-                <h3 className="font-bold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.desc}</p>
+              <div key={i} className="rounded-xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/40 hover:bg-white/[0.06] hover:-translate-y-1">
+                <div className="mb-4 inline-flex rounded-lg border border-cyan-400/30 bg-cyan-400/10 p-3 text-cyan-400">
+                  <feature.icon size={22} />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">{feature.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-400">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -159,9 +182,19 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-4 border-t border-white/10 bg-black/40">
-        <div className="container mx-auto max-w-5xl text-center text-xs leading-relaxed text-muted-foreground sm:text-sm">
-          <p>© 2026 TuneCollab. All rights reserved. | Retro-Futuristic Music Platform</p>
+      <footer className="py-12 px-4 border-t border-white/10 bg-black/80">
+        <div className="container mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-400">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-cyan-400 font-mono">♪ TUNE×COLLAB</span>
+            <span>© 2026 Professional Music Ecosystem</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <button onClick={handleExplore} className="hover:text-cyan-400 transition">Explore</button>
+            <button onClick={() => navigate("/ai-studio")} className="hover:text-cyan-400 transition">AI Studio</button>
+            <button onClick={() => navigate("/collaborate")} className="hover:text-cyan-400 transition">Collaborate</button>
+            <a href="#features" className="hover:text-cyan-400 transition">Features</a>
+          </div>
+          <div className="text-cyan-400/80 font-mono">SYSTEM_ONLINE_SECURE</div>
         </div>
       </footer>
 
