@@ -6,6 +6,7 @@ import {
   collaborationLayers,
   collaborations,
   notifications,
+  playlistLikes,
   playlistTracks,
   playlists,
   trackComments,
@@ -211,6 +212,35 @@ export async function toggleTrackLike(trackId: number, userId: number) {
   if (track.creatorId !== userId) {
     const actor = await getUserById(userId);
     await db.insert(notifications).values({ recipientId: track.creatorId, type: "track_like", relatedUserId: userId, relatedTrackId: trackId, title: "Track liked", message: `${actor?.name ?? "A musician"} liked ${track.title}`, actionUrl: `/track/${trackId}` });
+  }
+  return { liked: true };
+}
+
+export async function togglePlaylistLike(playlistId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const playlist = await getPlaylistById(playlistId);
+  if (!playlist) throw new Error("Playlist not found");
+  const existing = await db.select().from(playlistLikes)
+    .where(and(eq(playlistLikes.playlistId, playlistId), eq(playlistLikes.userId, userId))).limit(1);
+  if (existing.length > 0) {
+    await db.delete(playlistLikes).where(and(eq(playlistLikes.playlistId, playlistId), eq(playlistLikes.userId, userId)));
+    await db.update(playlists).set({ likes: sql`GREATEST(COALESCE(${playlists.likes}, 0) - 1, 0)` }).where(eq(playlists.id, playlistId));
+    return { liked: false };
+  }
+  await db.insert(playlistLikes).values({ playlistId, userId });
+  await db.update(playlists).set({ likes: sql`COALESCE(${playlists.likes}, 0) + 1` }).where(eq(playlists.id, playlistId));
+  if (playlist.creatorId !== userId) {
+    const actor = await getUserById(userId);
+    await db.insert(notifications).values({
+      recipientId: playlist.creatorId,
+      type: "playlist_like",
+      relatedUserId: userId,
+      relatedPlaylistId: playlistId,
+      title: "Playlist liked",
+      message: `${actor?.name ?? "A musician"} liked ${playlist.title}`,
+      actionUrl: `/playlist/${playlistId}`,
+    });
   }
   return { liked: true };
 }

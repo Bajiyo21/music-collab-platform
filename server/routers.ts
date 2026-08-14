@@ -49,6 +49,7 @@ import {
   removeTrackFromPlaylistRecord,
   respondToCollaborationInvitation,
   toggleTrackLike,
+  togglePlaylistLike,
   unfollowUser,
   updatePlaylistRecord,
   updateUserProfile,
@@ -291,6 +292,10 @@ export const appRouter = router({
     delete: protectedProcedure
       .input(z.object({ playlistId: z.number() }))
       .mutation(async ({ input, ctx }) => deletePlaylistRecord(input.playlistId, ctx.user.id)),
+
+    like: protectedProcedure
+      .input(z.object({ playlistId: z.number() }))
+      .mutation(async ({ input, ctx }) => togglePlaylistLike(input.playlistId, ctx.user.id)),
 
     addTrack: protectedProcedure
       .input(z.object({ playlistId: z.number(), trackId: z.number() }))

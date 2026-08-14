@@ -110,7 +110,7 @@
 
 ## Phase 12: Social Features
 - [x] Implement like functionality for tracks
-- [ ] Implement like functionality for playlists
+- [x] Implement persistent like functionality for playlists
 - [x] Create comment system for tracks
 - [x] Create comment system for collaborations
 - [ ] Implement comment deletion and editing
