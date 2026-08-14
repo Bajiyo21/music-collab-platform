@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { filterAndSortTrackRows, mergeTrackPage, type DiscoverySort } from "@shared/discovery";
+import { getRecommendedArtists } from "@shared/recommendations";
 
 type SortMode = DiscoverySort;
 const SEARCH_PAGE_SIZE = 20;
@@ -72,6 +73,7 @@ export default function Explore() {
   }
 
   const visibleRows = isSearchMode ? filteredRows : filteredRows.slice(0, visibleCount);
+  const recommendedArtists = useMemo(() => getRecommendedArtists(tracksQuery.data ?? []), [tracksQuery.data]);
   const canLoadMore = isSearchMode ? (searchQueryResult.data?.length ?? 0) === SEARCH_PAGE_SIZE : visibleCount < filteredRows.length;
   const isLoading = tracksQuery.isLoading || (isSearchMode && searchQueryResult.isLoading && searchPage === 0);
   const loadMore = () => isSearchMode ? setSearchPage((page) => page + 1) : setVisibleCount((count) => count + 12);
@@ -114,6 +116,11 @@ export default function Explore() {
             </label>
           </div>
         </div>
+
+        {recommendedArtists.length > 0 && <section className="mb-10 rounded-lg border border-white/10 bg-black/40 p-5 sm:p-6">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-2"><div><p className="text-xs uppercase tracking-[0.25em] text-cyan-300">Creator signal</p><h2 className="mt-1 text-2xl font-bold">Recommended artists</h2></div><p className="text-xs text-gray-500">Ranked from public track activity</p></div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{recommendedArtists.map((artist) => <button key={artist.id} onClick={() => navigate(`/profile/${artist.id}`)} className="group rounded-lg border border-white/10 bg-white/5 p-4 text-left transition hover:border-cyan-400/40 hover:bg-cyan-400/5"><div className="flex items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400/30 to-fuchsia-500/30 font-bold text-cyan-300">{artist.name.slice(0, 1).toUpperCase()}</span><div className="min-w-0"><p className="truncate font-semibold group-hover:text-cyan-300">{artist.name}</p><p className="mt-0.5 text-xs text-gray-500">{artist.trackCount} public {artist.trackCount === 1 ? "track" : "tracks"}</p></div></div><div className="mt-4 flex flex-wrap gap-1">{artist.genres.slice(0, 2).map((genre) => <span key={genre} className="rounded border border-cyan-400/25 px-2 py-1 text-[11px] text-cyan-300">{genre}</span>)}</div></button>)}</div>
+        </section>}
 
         {isLoading ? <div className="py-20 text-center text-cyan-300"><Loader2 className="mx-auto animate-spin" /></div> : visibleRows.length === 0 ? <div className="rounded border border-dashed border-white/15 px-6 py-16 text-center text-gray-500"><Music className="mx-auto mb-4 opacity-40" /><p>No public tracks match this search.</p></div> : <>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">

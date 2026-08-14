@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { ArrowLeft, Upload as UploadIcon, Music, CheckCircle } from "lucide-react";
+import { ArrowLeft, Upload as UploadIcon, Music, CheckCircle, Loader2, Sparkles } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import type { TrackMetadataSuggestion } from "@shared/metadata-suggestions";
 import { toast } from "sonner";
 
 export default function Upload() {
@@ -17,6 +19,31 @@ export default function Upload() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploadComplete, setUploadComplete] = useState(false);
+  const [metadataSuggestion, setMetadataSuggestion] = useState<TrackMetadataSuggestion | null>(null);
+  const metadataSuggestionMutation = trpc.aiStudio.suggestMetadata.useMutation({
+    onSuccess: (suggestion) => {
+      setMetadataSuggestion(suggestion);
+      toast.success("TuneAI prepared metadata suggestions for review.");
+    },
+    onError: (error) => toast.error(error.message || "TuneAI could not prepare metadata right now."),
+  });
+
+  const requestMetadataSuggestion = () => {
+    if (!title.trim()) {
+      toast.error("Add a track title before asking TuneAI for metadata.");
+      return;
+    }
+    metadataSuggestionMutation.mutate({ title: title.trim(), description: description.trim() || undefined, currentGenre: genre as TrackMetadataSuggestion["genre"] });
+  };
+
+  const applyMetadataSuggestion = () => {
+    if (!metadataSuggestion) return;
+    setDescription(metadataSuggestion.description);
+    setGenre(metadataSuggestion.genre);
+    setTags(metadataSuggestion.tags.join(", "));
+    setMetadataSuggestion(null);
+    toast.success("Metadata suggestions applied. You can still edit every field.");
+  };
 
   if (!isAuthenticated) {
     return (
@@ -209,6 +236,24 @@ export default function Upload() {
                     rows={4}
                     className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition resize-none"
                   />
+                </div>
+
+                <div className="studio-surface border-cyan-400/20 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="flex items-center gap-2 text-sm font-semibold text-cyan-400"><Sparkles size={16} /> TuneAI metadata assistant</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Get a suggested description, genre, and discovery tags from the details you provide. Suggestions do not change your upload until you apply them.</p>
+                    </div>
+                    <button type="button" onClick={requestMetadataSuggestion} disabled={metadataSuggestionMutation.isPending || uploading} className="inline-flex shrink-0 items-center justify-center gap-2 rounded border border-cyan-400/40 bg-cyan-400/10 px-3 py-2 text-sm font-semibold text-cyan-400 transition hover:bg-cyan-400/20 disabled:cursor-not-allowed disabled:opacity-50">
+                      {metadataSuggestionMutation.isPending ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+                      {metadataSuggestionMutation.isPending ? "Generating…" : "Suggest metadata"}
+                    </button>
+                  </div>
+                  {metadataSuggestion && <div className="mt-4 rounded border border-border bg-background/70 p-3 text-sm">
+                    <p className="font-medium text-foreground">{metadataSuggestion.description}</p>
+                    <div className="mt-3 flex flex-wrap gap-2"><span className="rounded border border-cyan-400/30 bg-cyan-400/10 px-2 py-1 text-xs text-cyan-400">{metadataSuggestion.genre}</span>{metadataSuggestion.tags.map((tag) => <span key={tag} className="rounded border border-border bg-card px-2 py-1 text-xs text-muted-foreground">{tag}</span>)}</div>
+                    <button type="button" onClick={applyMetadataSuggestion} className="mt-3 rounded bg-cyan-400 px-3 py-2 text-xs font-bold text-black transition hover:bg-cyan-300">Apply suggestions</button>
+                  </div>}
                 </div>
 
                 {/* Genre */}

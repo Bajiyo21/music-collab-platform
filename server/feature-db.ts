@@ -26,6 +26,8 @@ import {
   getPlaylistTracks,
 } from "./db";
 import { buildCollaborationNotificationRows } from "./notification-utils";
+import { canRemoveCollaborationLayer } from "@shared/collaboration-permissions";
+import { getInvitationResolution } from "@shared/collaboration-flow";
 
 export async function getUserById(userId: number) {
   const db = await getDb();
@@ -255,10 +257,12 @@ export async function respondToCollaborationInvitation(invitationId: number, use
   const invitation = await db.select().from(collaborationInvitations).where(and(eq(collaborationInvitations.id, invitationId), eq(collaborationInvitations.invitedUserId, userId), eq(collaborationInvitations.status, "pending"))).limit(1);
   if (!invitation[0]) throw new Error("Invitation not found or already answered");
   await db.update(collaborationInvitations).set({ status: response, respondedAt: new Date() }).where(eq(collaborationInvitations.id, invitationId));
-  if (response === "accepted") {
+  const resolution = getInvitationResolution(response, false);
+  if (resolution.shouldActivateCollaboration) {
     const member = await db.select().from(collaborationContributors).where(and(eq(collaborationContributors.collaborationId, invitation[0].collaborationId), eq(collaborationContributors.userId, userId))).limit(1);
-    if (!member[0]) await db.insert(collaborationContributors).values({ collaborationId: invitation[0].collaborationId, userId, role: "contributor" });
-    await db.update(collaborations).set({ status: "in_progress" }).where(eq(collaborations.id, invitation[0].collaborationId));
+    const membershipResolution = getInvitationResolution(response, Boolean(member[0]));
+    if (membershipResolution.shouldAddContributor) await db.insert(collaborationContributors).values({ collaborationId: invitation[0].collaborationId, userId, role: "contributor" });
+    if (membershipResolution.shouldActivateCollaboration) await db.update(collaborations).set({ status: "in_progress" }).where(eq(collaborations.id, invitation[0].collaborationId));
   }
   return { success: true, response };
 }
@@ -365,10 +369,11 @@ export async function removeCollaborationLayerRecord(layerId: number, userId: nu
   if (!layer[0]) throw new Error("Layer not found");
   
   const collab = await db.select({ creatorId: collaborations.creatorId }).from(collaborations).where(eq(collaborations.id, layer[0].collaborationId)).limit(1);
-  const isCollabOwner = collab[0]?.creatorId === userId;
-  const isLayerCreator = layer[0].addedById === userId;
-
-  if (!isCollabOwner && !isLayerCreator) {
+  if (!canRemoveCollaborationLayer({
+    projectOwnerId: collab[0]?.creatorId,
+    layerUploaderId: layer[0].addedById,
+    requestingUserId: userId,
+  })) {
     throw new Error("Only the project owner or the musician who added this track can remove it.");
   }
 

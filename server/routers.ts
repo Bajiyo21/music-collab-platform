@@ -27,6 +27,7 @@ import {
   toggleTrackFavorite,
 } from "./db";
 import { z } from "zod";
+import { TRACK_METADATA_GENRES, normalizeTrackMetadataSuggestion } from "@shared/metadata-suggestions";
 import {
   addCollaborationCommentRecord,
   addCollaborationLayerRecord,
@@ -347,6 +348,54 @@ export const appRouter = router({
   // AI MUSIC STUDIO & CHAT ASSISTANT
   // ============================================
   aiStudio: router({
+    suggestMetadata: protectedProcedure
+      .input(z.object({
+        title: z.string().trim().min(1).max(160),
+        description: z.string().trim().max(2_000).optional(),
+        currentGenre: z.enum(TRACK_METADATA_GENRES),
+      }))
+      .mutation(async ({ input }) => {
+        const res = await invokeLLM({
+          model: "gpt-5-mini",
+          messages: [
+            {
+              role: "system",
+              content: "You generate concise, listener-friendly release metadata for TuneCollab. Work only from the title, creator-provided description, and stated genre. Do not claim you heard or analyzed audio, do not make copyright or ownership claims, and do not name real artists. Return only the required JSON.",
+            },
+            {
+              role: "user",
+              content: `Create upload metadata for this track. Title: ${input.title}\nCreator description: ${input.description || "Not provided"}\nCurrent genre: ${input.currentGenre}\nWrite one description under 320 characters, select the closest genre from the permitted list, and propose 3–6 concise lowercase discovery tags.`,
+            },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "track_metadata_suggestion",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  description: { type: "string" },
+                  genre: { type: "string", enum: [...TRACK_METADATA_GENRES] },
+                  tags: { type: "array", items: { type: "string" } },
+                },
+                required: ["description", "genre", "tags"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        const content = res.choices[0]?.message.content;
+        try {
+          return normalizeTrackMetadataSuggestion(
+            typeof content === "string" ? JSON.parse(content) : content,
+            input.currentGenre,
+          );
+        } catch {
+          return normalizeTrackMetadataSuggestion({}, input.currentGenre);
+        }
+      }),
+
     analyze: protectedProcedure
       .input(z.object({ trackId: z.number().optional(), lyrics: z.string().max(10000).optional(), prompt: z.string().max(2000).optional() }))
       .mutation(async ({ input }) => {

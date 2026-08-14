@@ -49,7 +49,7 @@
 - [x] Create track upload page with form (title, description, genre, tags, cover art)
 - [x] Add a tags input to Upload.tsx and submit/persist user-provided tags alongside genre and cover art
 - [x] Add regression coverage for multipart uploads with cover art plus explicit tags persistence
-- [ ] Implement AI-powered metadata generation (descriptions, tags, genre suggestions)
+- [x] Implement AI-powered metadata generation (descriptions, tags, genre suggestions)
 - [x] Implement track detail page with metadata display
 - [x] Implement track edit functionality with owner-checked persisted mutation and Dashboard dialog
 - [x] Implement track deletion with confirmation and dependent metadata cleanup
@@ -62,8 +62,8 @@
 - [x] Add play/pause controls
 - [x] Add seek/progress bar with click-to-seek
 - [x] Add volume control with slider
-- [ ] Add queue management (next/previous)
-- [ ] Implement shuffle and repeat modes
+- [x] Add queue management (next/previous)
+- [x] Implement shuffle and repeat modes
 - [x] Add current time and duration display
 - [x] Add keyboard shortcuts (space for play/pause, arrow keys for seek)
 
@@ -72,7 +72,7 @@
 - [x] Implement genre filter functionality
 - [x] Implement search functionality (tracks, artists, playlists)
 - [x] Create trending tracks section
-- [ ] Create recommended artists section
+- [x] Create recommended artists section
 - [x] Implement real pagination for search results with server-side page offsets
 - [x] Add sorting options (newest, most popular, trending)
 - [x] Add regression tests for search pagination and preserved filters/sort state
@@ -144,7 +144,7 @@
 - [ ] Test authentication flow end-to-end
 - [x] Test file upload and storage helpers (TypeScript, copyright helper, endpoint, storage, and persistence metadata coverage complete)
 - [ ] Test search and filtering
-- [ ] Test collaboration invitation flow
+- [x] Test collaboration invitation flow and permission-safe layer editing/removal logic
 - [ ] Performance testing and optimization
 - [ ] Cross-browser testing
 - [x] Add a Vitest regression test for authenticated /api/upload-track success and unauthenticated rejection
