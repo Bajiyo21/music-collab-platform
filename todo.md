@@ -22,7 +22,7 @@
 - [x] Implement signup flow with user profile creation through Manus OAuth profile initialization
 - [x] Implement a first-run onboarding form for new users (avatar, bio, social links)
 - [x] Add logout functionality with secure cookie clearing and client session cleanup
-- [ ] Create auth guards for protected routes
+- [x] Create auth guards for protected workspace routes
 - [x] Add session persistence and error handling through authenticated session cookies, Preview fallback, and query error handling
 
 ## Phase 4: Database Schema & Core Models
@@ -96,7 +96,7 @@
 - [x] Implement track/stem sharing within collaboration (layer system)
 - [x] Add per-track comments in collaboration (comments panel)
 - [x] Implement collaboration visibility settings (public/private/invited)
-- [ ] Implement collaboration deletion and member management
+- [x] Implement owner-only collaboration deletion and member management
 
 ## Phase 11: Playlists
 - [x] Create playlist creation page with persisted modal form
@@ -133,9 +133,9 @@
 - [x] Add error boundaries and error messages
 - [ ] Create empty states for all list views
 - [ ] Implement toast notifications for user feedback
-- [ ] Add micro-animations and transitions
-- [ ] Implement dark mode toggle (if needed)
-- [ ] Add accessibility features (ARIA labels, keyboard navigation)
+- [x] Add micro-animations and transitions with reduced-motion support
+- [x] Implement persistent light/dark mode toggle
+- [x] Add accessibility features including visible focus rings, keyboard audio controls, ARIA labels, and reduced-motion support
 - [x] Optimize performance with route-level lazy loading and a shared accessible loading fallback
 
 ## Phase 15: Testing & Quality Assurance

@@ -55,6 +55,8 @@ import {
   deletePlaylistRecord,
   updateCollaborationLayerRecord,
   removeCollaborationLayerRecord,
+  removeCollaborationContributorRecord,
+  deleteCollaborationRecord,
   updateTrackRecord,
   deleteTrackRecord,
 } from "./feature-db";
@@ -238,6 +240,14 @@ export const appRouter = router({
     removeLayer: protectedProcedure
       .input(z.object({ layerId: z.number() }))
       .mutation(async ({ input, ctx }) => removeCollaborationLayerRecord(input.layerId, ctx.user.id)),
+
+    removeContributor: protectedProcedure
+      .input(z.object({ collabId: z.number(), contributorId: z.number() }))
+      .mutation(async ({ input, ctx }) => removeCollaborationContributorRecord(input.collabId, input.contributorId, ctx.user.id)),
+
+    delete: protectedProcedure
+      .input(z.object({ collabId: z.number() }))
+      .mutation(async ({ input, ctx }) => deleteCollaborationRecord(input.collabId, ctx.user.id)),
 
     addComment: protectedProcedure
       .input(z.object({ collabId: z.number(), layerId: z.number().optional(), text: z.string().trim().min(1).max(5000) }))

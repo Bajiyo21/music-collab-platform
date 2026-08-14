@@ -130,6 +130,15 @@
     min-width: 320px;
     transition: background-color 180ms var(--ease-out, ease-out), color 180ms var(--ease-out, ease-out);
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  :focus-visible {
+    outline: 3px solid color-mix(in oklch, var(--ring) 78%, white);
+    outline-offset: 3px;
+  }
   
   /* Typography - Bold, High Impact */
   h1, h2, h3, h4, h5, h6 {
@@ -458,6 +467,16 @@
 .safe-wrap {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 

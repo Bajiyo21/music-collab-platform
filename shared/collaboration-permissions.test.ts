@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canRemoveCollaborationLayer } from "./collaboration-permissions";
+import { canManageCollaboration, canRemoveCollaborationLayer } from "./collaboration-permissions";
 
 describe("canRemoveCollaborationLayer", () => {
   it("allows a project owner to remove a contributor layer", () => {
@@ -12,5 +12,10 @@ describe("canRemoveCollaborationLayer", () => {
 
   it("rejects an unrelated contributor from deleting another musician’s layer", () => {
     expect(canRemoveCollaborationLayer({ projectOwnerId: 10, layerUploaderId: 22, requestingUserId: 31 })).toBe(false);
+  });
+
+  it("restricts collaboration administration to the project owner", () => {
+    expect(canManageCollaboration(10, 10)).toBe(true);
+    expect(canManageCollaboration(10, 22)).toBe(false);
   });
 });

@@ -1,6 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, type ComponentType } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -22,6 +22,14 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const AiStudio = lazy(() => import("./pages/AiStudio"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+const RouteLoading = () => <div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground" role="status" aria-live="polite">Loading TuneCollab…</div>;
+
+function ProtectedScreen({ component: Screen }: { component: ComponentType }) {
+  const { isAuthenticated, loading } = useAuth({ redirectOnUnauthenticated: true });
+  if (loading) return <RouteLoading />;
+  return isAuthenticated ? <Screen /> : <RouteLoading />;
+}
+
 function OnboardingRedirect() {
   const { user, loading } = useAuth();
   const [, navigate] = useLocation();
@@ -39,20 +47,20 @@ function OnboardingRedirect() {
 }
 
 function Router() {
-  return <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground" role="status" aria-live="polite">Loading TuneCollab…</div>}>
+  return <Suspense fallback={<RouteLoading />}>
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/explore" component={Explore} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/upload" component={Upload} />
+      <Route path="/dashboard"><ProtectedScreen component={Dashboard} /></Route>
+      <Route path="/upload"><ProtectedScreen component={Upload} /></Route>
       <Route path="/collaborate" component={CollaborationHub} />
       <Route path="/profile/:userId" component={Profile} />
       <Route path="/collaboration/:collabId" component={CollaborationRoom} />
-      <Route path="/playlists" component={Playlists} />
+      <Route path="/playlists"><ProtectedScreen component={Playlists} /></Route>
       <Route path="/playlist/:playlistId" component={PlaylistDetail} />
       <Route path="/track/:trackId" component={TrackDetail} />
-      <Route path="/notifications" component={Notifications} />
-      <Route path="/ai-studio" component={AiStudio} />
+      <Route path="/notifications"><ProtectedScreen component={Notifications} /></Route>
+      <Route path="/ai-studio"><ProtectedScreen component={AiStudio} /></Route>
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

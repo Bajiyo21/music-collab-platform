@@ -26,7 +26,7 @@ import {
   getPlaylistTracks,
 } from "./db";
 import { buildCollaborationNotificationRows } from "./notification-utils";
-import { canRemoveCollaborationLayer } from "@shared/collaboration-permissions";
+import { canManageCollaboration, canRemoveCollaborationLayer } from "@shared/collaboration-permissions";
 import { getInvitationResolution } from "@shared/collaboration-flow";
 
 export async function getUserById(userId: number) {
@@ -378,5 +378,32 @@ export async function removeCollaborationLayerRecord(layerId: number, userId: nu
   }
 
   await db.delete(collaborationLayers).where(eq(collaborationLayers.id, layerId));
+  return { deleted: true };
+}
+
+export async function removeCollaborationContributorRecord(collaborationId: number, contributorId: number, requestingUserId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const collaboration = await db.select({ creatorId: collaborations.creatorId }).from(collaborations).where(eq(collaborations.id, collaborationId)).limit(1);
+  if (!collaboration[0]) throw new Error("Collaboration not found");
+  if (!canManageCollaboration(collaboration[0].creatorId, requestingUserId)) throw new Error("Only the project owner can manage contributors");
+  if (contributorId === collaboration[0].creatorId) throw new Error("The project owner cannot be removed");
+  await db.delete(collaborationContributors).where(and(eq(collaborationContributors.collaborationId, collaborationId), eq(collaborationContributors.userId, contributorId)));
+  await db.delete(collaborationInvitations).where(and(eq(collaborationInvitations.collaborationId, collaborationId), eq(collaborationInvitations.invitedUserId, contributorId)));
+  return { removed: true };
+}
+
+export async function deleteCollaborationRecord(collaborationId: number, requestingUserId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const collaboration = await db.select({ creatorId: collaborations.creatorId }).from(collaborations).where(eq(collaborations.id, collaborationId)).limit(1);
+  if (!collaboration[0]) throw new Error("Collaboration not found");
+  if (!canManageCollaboration(collaboration[0].creatorId, requestingUserId)) throw new Error("Only the project owner can delete this collaboration");
+  await db.delete(collaborationComments).where(eq(collaborationComments.collaborationId, collaborationId));
+  await db.delete(collaborationLayers).where(eq(collaborationLayers.collaborationId, collaborationId));
+  await db.delete(collaborationInvitations).where(eq(collaborationInvitations.collaborationId, collaborationId));
+  await db.delete(collaborationContributors).where(eq(collaborationContributors.collaborationId, collaborationId));
+  await db.delete(notifications).where(eq(notifications.relatedCollabId, collaborationId));
+  await db.delete(collaborations).where(eq(collaborations.id, collaborationId));
   return { deleted: true };
 }

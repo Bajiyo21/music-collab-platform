@@ -5,3 +5,7 @@ export function canRemoveCollaborationLayer(input: {
 }) {
   return input.projectOwnerId === input.requestingUserId || input.layerUploaderId === input.requestingUserId;
 }
+
+export function canManageCollaboration(projectOwnerId: number | null | undefined, requestingUserId: number) {
+  return projectOwnerId === requestingUserId;
+}
