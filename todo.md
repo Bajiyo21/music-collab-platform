@@ -126,12 +126,12 @@
 - [x] Add mark as read functionality
 - [ ] Implement email notification integration (optional)
 - [x] Create notification types for collaboration invite, comment, and new track in collaboration
-- [ ] Add notification preferences/settings
+- [x] Add persistent inbox preferences for viewing all or unread notifications
 
 ## Phase 14: Advanced UI Polish
-- [ ] Implement loading states and skeletons
+- [x] Implement reusable accessible loading states and skeletons for asynchronous list content
 - [x] Add error boundaries and error messages
-- [ ] Create empty states for all list views
+- [x] Create reusable empty states for core asynchronous list views
 - [x] Implement toast notifications for user feedback across uploads, social actions, comments, playlists, collaborations, and AI workflows
 - [x] Add micro-animations and transitions with reduced-motion support
 - [x] Implement persistent light/dark mode toggle
@@ -140,7 +140,7 @@
 
 ## Phase 15: Testing & Quality Assurance
 - [ ] Write unit tests for API procedures
-- [ ] Write component tests for key UI components
+- [x] Write server-rendered component tests for shared loading and empty-state UI components
 - [ ] Test authentication flow end-to-end
 - [x] Test file upload and storage helpers (TypeScript, copyright helper, endpoint, storage, and persistence metadata coverage complete)
 - [x] Test search and filtering through discovery helper regression coverage for search, pagination, filters, and sorting

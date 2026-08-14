@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { ArrowLeft, Bell, Heart, Loader2, LogOut, Music, Plus, TrendingUp, Users, Settings2, Sparkles } from "lucide-react";
 import { TrackManageDialog } from "@/components/TrackManageDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { EmptyState, ListSkeleton } from "@/components/AsyncState";
 
 type DashboardTrack = {
   id: number;
@@ -41,13 +42,7 @@ export default function Dashboard() {
     );
   }
 
-  if (profileQuery.isLoading || tracksQuery.isLoading || collabsQuery.isLoading || playlistsQuery.isLoading || favoritesQuery.isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-cyan-300">
-        <Loader2 className="animate-spin" />
-      </div>
-    );
-  }
+  if (profileQuery.isLoading || tracksQuery.isLoading || collabsQuery.isLoading || playlistsQuery.isLoading || favoritesQuery.isLoading) return <main className="min-h-screen bg-background px-4 py-24"><div className="container max-w-6xl"><ListSkeleton rows={5} /></div></main>;
 
   const tracks = tracksQuery.data ?? [];
   const collabs = collabsQuery.data ?? [];
@@ -177,7 +172,7 @@ export default function Dashboard() {
                     ))}
                   </div>
                 ) : (
-                  <Empty text="You have not uploaded a track yet." action="Upload your first track" onClick={() => navigate("/upload")} />
+                  <EmptyState title="No uploaded tracks yet" description="Upload your first track to start building your catalog." action={<button onClick={() => navigate("/upload")} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">Upload your first track</button>} />
                 )}
               </section>
 
