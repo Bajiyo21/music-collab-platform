@@ -26,6 +26,7 @@ export default function Dashboard() {
   const collabsQuery = trpc.collaborations.mine.useQuery(undefined, { enabled: isAuthenticated });
   const playlistsQuery = trpc.playlists.list.useQuery(undefined, { enabled: isAuthenticated });
   const unreadQuery = trpc.notifications.unreadCount.useQuery(undefined, { enabled: isAuthenticated });
+  const activityQuery = trpc.notifications.list.useQuery({ limit: 5 }, { enabled: isAuthenticated });
 
   if (!isAuthenticated) {
     return (
@@ -180,7 +181,7 @@ export default function Dashboard() {
                 )}
               </section>
 
-              <aside className="rounded-lg border border-white/10 bg-black/30 p-5 sm:p-6">
+              <aside className="space-y-6"><section className="rounded-lg border border-white/10 bg-black/30 p-5 sm:p-6">
                 <h2 className="mb-5 text-lg font-bold">Quick actions</h2>
                 <div className="space-y-3">
                   <Action label="Upload new track" onClick={() => navigate("/upload")} icon={<Plus size={16} />} />
@@ -188,7 +189,7 @@ export default function Dashboard() {
                   <Action label="Manage playlists" onClick={() => navigate("/playlists")} icon={<Music size={16} />} />
                   <Action label="Edit profile" onClick={() => user?.id && navigate(`/profile/${user.id}`)} icon={<Heart size={16} />} />
                 </div>
-              </aside>
+              </section><section className="rounded-lg border border-white/10 bg-black/30 p-5 sm:p-6"><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-bold">Recent activity</h2><button onClick={() => navigate("/notifications")} className="text-xs text-cyan-300 hover:underline">View inbox</button></div>{activityQuery.isLoading ? <p className="text-sm text-muted-foreground">Loading activity…</p> : activityQuery.data?.length ? <div className="space-y-3">{activityQuery.data.map((notification) => <button key={notification.id} onClick={() => notification.actionUrl && navigate(notification.actionUrl)} className="block w-full rounded border border-white/10 bg-white/5 p-3 text-left transition hover:border-cyan-400/30"><p className="truncate text-sm font-semibold">{notification.title}</p><p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{notification.message}</p><p className="mt-2 text-[11px] text-muted-foreground">{new Date(notification.createdAt).toLocaleDateString()}</p></button>)}</div> : <p className="text-sm text-muted-foreground">Your project activity will appear here.</p>}</section></aside>
             </div>
           )}
 

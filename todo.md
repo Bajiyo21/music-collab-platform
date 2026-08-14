@@ -115,7 +115,7 @@
 - [x] Create comment system for collaborations
 - [ ] Implement comment deletion and editing
 - [x] Add explicit social-media share actions alongside copy-link sharing
-- [ ] Create activity feed or recent activity section
+- [x] Create a data-backed dashboard recent-activity section from notifications
 - [x] Implement like/comment counts display
 
 ## Phase 13: Notifications System
