@@ -113,7 +113,7 @@
 - [x] Implement persistent like functionality for playlists
 - [x] Create comment system for tracks
 - [x] Create comment system for collaborations
-- [ ] Implement comment deletion and editing
+- [x] Implement author-only track comment editing and deletion
 - [x] Add explicit social-media share actions alongside copy-link sharing
 - [x] Create a data-backed dashboard recent-activity section from notifications
 - [x] Implement like/comment counts display
