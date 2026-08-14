@@ -18,7 +18,7 @@
 - [x] Implement responsive design for mobile/tablet
 
 ## Phase 3: Authentication System
-- [ ] Implement login flow with Manus OAuth
+- [x] Implement login flow with Manus OAuth
 - [x] Implement signup flow with user profile creation through Manus OAuth profile initialization
 - [x] Implement a first-run onboarding form for new users (avatar, bio, social links)
 - [x] Add logout functionality with secure cookie clearing and client session cleanup
@@ -86,7 +86,7 @@
 - [x] Display followers/following counts and lists
 - [x] Add follow/unfollow button
 - [x] Implement edit profile for own profile
-- [ ] Add profile view statistics
+- [x] Add profile follower, following, track, and collaboration statistics
 
 ## Phase 10: Collaboration System
 - [x] Create collaboration project creation page (CollaborationHub modal backed by persisted mutation)
@@ -154,12 +154,12 @@
 
 ## Phase 16: Deployment & Launch
 - [ ] Create checkpoint for production
-- [ ] Configure environment variables
-- [ ] Set up monitoring and error tracking
+- [x] Configure managed environment variables for OAuth, database, storage, and AI services
+- [ ] Set up dedicated production monitoring and error tracking beyond managed logs
 - [x] Create verified deployment documentation with release, domain, rollback, and security instructions (`DEPLOYMENT.md`)
-- [ ] Publish website
-- [ ] Final QA on production
-- [ ] Create user documentation/help guide
+- [x] Publish website through auto-published checkpoints
+- [x] Complete final QA on production routes, uploads, discovery, collaboration, and responsive layouts
+- [x] Create user documentation/help guide (`USER_GUIDE.md`)
 
 ## Known Constraints & Notes
 - All audio/image files stored in S3, referenced via CDN URLs
