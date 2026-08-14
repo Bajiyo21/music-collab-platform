@@ -257,6 +257,27 @@ export async function addTrackComment(trackId: number, userId: number, text: str
   return insertId > 0 ? db.select().from(trackComments).where(eq(trackComments.id, insertId)).limit(1) : getTrackComments(trackId);
 }
 
+export async function updateTrackCommentRecord(commentId: number, userId: number, text: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const existing = await db.select({ id: trackComments.id }).from(trackComments)
+    .where(and(eq(trackComments.id, commentId), eq(trackComments.userId, userId))).limit(1);
+  if (!existing[0]) throw new Error("Comment not found or not owned by you");
+  await db.update(trackComments).set({ text }).where(eq(trackComments.id, commentId));
+  return { updated: true };
+}
+
+export async function deleteTrackCommentRecord(commentId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const existing = await db.select({ trackId: trackComments.trackId }).from(trackComments)
+    .where(and(eq(trackComments.id, commentId), eq(trackComments.userId, userId))).limit(1);
+  if (!existing[0]) throw new Error("Comment not found or not owned by you");
+  await db.delete(trackComments).where(eq(trackComments.id, commentId));
+  await db.update(tracks).set({ comments: sql`GREATEST(COALESCE(${tracks.comments}, 0) - 1, 0)` }).where(eq(tracks.id, existing[0].trackId));
+  return { deleted: true, trackId: existing[0].trackId };
+}
+
 export async function getCollaborationContributors(collaborationId: number) {
   const db = await getDb();
   if (!db) return [];

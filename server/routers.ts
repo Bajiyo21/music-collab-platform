@@ -32,6 +32,7 @@ import {
   addCollaborationCommentRecord,
   addCollaborationLayerRecord,
   addTrackComment,
+  deleteTrackCommentRecord,
   addTrackToPlaylistRecord,
   createCollaborationInvitation,
   createPlaylistRecord,
@@ -60,6 +61,7 @@ import {
   deleteCollaborationRecord,
   updateTrackRecord,
   deleteTrackRecord,
+  updateTrackCommentRecord,
 } from "./feature-db";
 
 export const appRouter = router({
@@ -149,6 +151,14 @@ export const appRouter = router({
     addComment: protectedProcedure
       .input(z.object({ trackId: z.number(), text: z.string().trim().min(1).max(5000) }))
       .mutation(async ({ input, ctx }) => addTrackComment(input.trackId, ctx.user.id, input.text)),
+
+    updateComment: protectedProcedure
+      .input(z.object({ commentId: z.number(), text: z.string().trim().min(1).max(5000) }))
+      .mutation(async ({ input, ctx }) => updateTrackCommentRecord(input.commentId, ctx.user.id, input.text)),
+
+    deleteComment: protectedProcedure
+      .input(z.object({ commentId: z.number() }))
+      .mutation(async ({ input, ctx }) => deleteTrackCommentRecord(input.commentId, ctx.user.id)),
 
     duplicateByHash: protectedProcedure
       .input(z.object({ fileHash: z.string().length(64) }))

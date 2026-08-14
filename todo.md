@@ -233,3 +233,9 @@
 - [x] Add an accessible Sun/Moon theme toggle to Explore, AI Studio, and Collaboration Room headers
 - [x] Apply light/dark-compatible card, button, and pill navigation styling across primary pages
 - [x] Verify desktop/mobile themes, run tests, and save the final production checkpoint
+
+## Phase 25: Surface and Color-System Refinement
+- [x] Remove glassmorphism-heavy surface treatments from core pages and shared styles
+- [x] Establish a restrained, accessible color hierarchy for light and dark themes
+- [x] Refine primary layouts and components for a clean professional music-product appearance
+- [x] Verify the revised visual system on desktop and mobile, then publish a checkpoint

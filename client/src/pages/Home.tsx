@@ -22,29 +22,29 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-hidden">
       {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-md">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-card">
         <div className="container flex min-h-16 flex-wrap items-center justify-between gap-2 px-4 py-3 sm:h-16 sm:flex-nowrap sm:py-0">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-400 to-magenta-500 flex items-center justify-center font-bold text-black text-sm">♪</div>
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-cyan-200 to-cyan-400 bg-clip-text text-transparent">TuneCollab</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">♪</div>
+            <span className="text-xl font-bold tracking-tight text-foreground">TuneCollab</span>
           </div>
 
           <nav className="hidden items-center gap-8 md:flex">
-            <button onClick={handleExplore} className="text-sm text-gray-300 hover:text-cyan-400 transition">
+            <button onClick={handleExplore} className="text-sm text-muted-foreground hover:text-primary transition">
               Explore
             </button>
-            <button onClick={() => navigate("/ai-studio")} className="text-sm text-cyan-300 hover:text-cyan-200 transition font-medium flex items-center gap-1.5">
-              ✨ AI Studio
+            <button onClick={() => navigate("/ai-studio")} className="flex items-center gap-1.5 text-sm font-medium text-primary transition hover:text-primary/75">
+              AI Studio
             </button>
-            <a href="#features" className="text-sm text-gray-300 hover:text-cyan-400 transition">
+            <a href="#features" className="text-sm text-muted-foreground hover:text-primary transition">
               Features
             </a>
           </nav>
 
-          <nav className="order-3 flex w-full items-center justify-center gap-5 border-t border-white/10 pt-2 md:hidden">
-            <button onClick={handleExplore} className="text-xs text-muted-foreground transition hover:text-cyan-400">Explore</button>
-            <a href="#features" className="text-xs text-muted-foreground transition hover:text-cyan-400">Features</a>
-            <a href="#about" className="text-xs text-muted-foreground transition hover:text-cyan-400">About</a>
+          <nav className="order-3 flex w-full items-center justify-center gap-5 border-t border-border pt-2 md:hidden">
+            <button onClick={handleExplore} className="text-xs text-muted-foreground transition hover:text-primary">Explore</button>
+            <a href="#features" className="text-xs text-muted-foreground transition hover:text-primary">Features</a>
+            <a href="#about" className="text-xs text-muted-foreground transition hover:text-primary">About</a>
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-4">
@@ -52,12 +52,12 @@ export default function Home() {
             {isAuthenticated ? (
               <>
                 <span className="text-sm text-muted-foreground hidden sm:inline">{user?.name}</span>
-                <button onClick={handleDashboard} className="px-4 py-2 bg-cyan-400/20 border border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/30 rounded font-semibold transition-all cursor-pointer">
+                <button onClick={handleDashboard} className="rounded-md border border-border bg-secondary px-4 py-2 font-semibold text-secondary-foreground transition hover:bg-muted">
                   Dashboard
                 </button>
               </>
             ) : (
-              <button onClick={() => startLogin()} className="px-4 py-2 bg-magenta-400/20 border border-magenta-400/50 text-magenta-400 hover:bg-magenta-400/30 rounded font-semibold transition-all cursor-pointer">
+              <button onClick={() => startLogin()} className="rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition hover:bg-primary/90">
                 Sign In
               </button>
             )}
@@ -69,8 +69,8 @@ export default function Home() {
       <section className="relative px-4 pb-16 pt-36 sm:pb-20 sm:pt-32">
         <div className="container max-w-4xl mx-auto text-center">
           {/* Error Code Badge */}
-          <div className="mb-6 inline-block max-w-full rounded border border-cyan-400/30 bg-black/40 px-3 py-2 text-center text-[0.65rem] font-mono text-cyan-400 sm:mb-8 sm:px-4 sm:text-xs">
-            [ SYSTEM_INIT.MUSIC.COLLAB_v1.0 ]
+          <div className="mb-6 inline-block max-w-full rounded-md border border-border bg-secondary px-3 py-2 text-center text-[0.65rem] font-mono text-primary sm:mb-8 sm:px-4 sm:text-xs">
+            MUSIC COLLABORATION WORKSPACE
           </div>
 
           {/* Main Heading */}
@@ -86,12 +86,12 @@ export default function Home() {
           </p>
 
           {/* Waveform Visualizer */}
-          <div className="mb-8 flex h-20 items-center justify-center overflow-hidden rounded-lg border border-cyan-400/30 bg-gradient-to-b from-cyan-500/20 to-transparent sm:mb-12 sm:h-24">
+          <div className="mb-8 flex h-20 items-center justify-center overflow-hidden rounded-xl border border-border bg-secondary sm:mb-12 sm:h-24">
             <div className="flex h-12 w-full items-end justify-center gap-0.5 px-2 sm:h-16 sm:gap-1">
               {Array.from({ length: 40 }).map((_, i) => (
                 <div
                   key={i}
-                  className="flex-1 bg-gradient-to-t from-cyan-400 to-cyan-300 rounded-sm"
+                  className="flex-1 rounded-sm bg-primary/75"
                   style={{
                     height: `${Math.random() * 100}%`,
                     animation: `pulse 0.5s ease-in-out ${i * 0.05}s infinite`,
@@ -103,50 +103,35 @@ export default function Home() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <button onClick={handleExplore} className="px-8 py-4 bg-cyan-400 text-black font-bold rounded hover:bg-cyan-300 transition-all transform hover:scale-105 cursor-pointer">
+            <button onClick={handleExplore} className="rounded-md bg-primary px-8 py-4 font-bold text-primary-foreground transition hover:bg-primary/90">
               Explore Tracks
             </button>
-            <button onClick={handleGetStarted} className="px-8 py-4 bg-black/40 border border-magenta-400/50 text-magenta-400 font-bold rounded hover:bg-black/60 transition-all cursor-pointer">
+            <button onClick={handleGetStarted} className="rounded-md border border-border bg-card px-8 py-4 font-bold text-foreground transition hover:bg-secondary">
               Get Started
             </button>
           </div>
 
           {/* Status */}
           <div className="flex flex-wrap items-center justify-center gap-2 text-center text-xs text-muted-foreground sm:text-sm mb-12">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span>System Online • Ready to Collaborate</span>
+            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span>Ready for your next session</span>
           </div>
 
           {/* Cover Art Banner Removed */}
         </div>
 
         {/* Floating Notes */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute text-cyan-400/30 text-4xl"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${3 + Math.random() * 2}s ease-in-out ${i * 0.2}s infinite`,
-              }}
-            >
-              ♪
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 px-4 bg-gradient-to-b from-black/40 to-black/80 border-t border-white/10">
+      <section id="features" className="border-y border-border bg-secondary py-20 px-4">
         <div className="container max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="text-xs uppercase tracking-[0.3em] text-cyan-400 font-mono">Next-Gen Architecture</span>
-            <h2 className="text-3xl sm:text-5xl font-black mt-2 tracking-tight">
-              <span className="neon-cyan">POWERFUL FEATURES</span>
+            <span className="font-mono text-xs uppercase tracking-[0.22em] text-primary">Built for creators</span>
+            <h2 className="mt-2 text-3xl font-black tracking-tight sm:text-5xl">
+              A better session starts here.
             </h2>
-            <p className="text-gray-400 mt-3 max-w-xl mx-auto text-sm sm:text-base">
+            <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
               Engineered for professional musicians, producers, and audio collaborators seeking absolute precision and speed.
             </p>
           </div>
@@ -158,12 +143,12 @@ export default function Home() {
               { icon: Headphones, title: "AI Studio", desc: "Automated analysis, chord progressions & TuneAI chat" },
               { icon: Zap, title: "Instant Discovery", desc: "Trending charts, genre tags & persistent favorites" },
             ].map((feature, i) => (
-              <div key={i} className="rounded-xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/40 hover:bg-white/[0.06] hover:-translate-y-1">
-                <div className="mb-4 inline-flex rounded-lg border border-cyan-400/30 bg-cyan-400/10 p-3 text-cyan-400">
+              <div key={i} className="rounded-xl border border-border bg-card p-6 transition hover:border-primary/40 hover:shadow-sm">
+                <div className="mb-4 inline-flex rounded-lg bg-accent p-3 text-accent-foreground">
                   <feature.icon size={22} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">{feature.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-400">{feature.desc}</p>
+                <h3 className="mb-2 text-lg font-bold">{feature.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -171,19 +156,19 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-white/10 bg-black/80">
-        <div className="container mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-400">
+      <footer className="border-t border-border bg-card py-12 px-4">
+        <div className="container mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 text-xs text-muted-foreground md:flex-row">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-cyan-400 font-mono">♪ TUNE×COLLAB</span>
+            <span className="font-mono font-bold text-primary">♪ TUNE×COLLAB</span>
             <span>© 2026 Professional Music Ecosystem</span>
           </div>
           <div className="flex items-center gap-6">
-            <button onClick={handleExplore} className="hover:text-cyan-400 transition">Explore</button>
-            <button onClick={() => navigate("/ai-studio")} className="hover:text-cyan-400 transition">AI Studio</button>
-            <button onClick={() => navigate("/collaborate")} className="hover:text-cyan-400 transition">Collaborate</button>
-            <a href="#features" className="hover:text-cyan-400 transition">Features</a>
+            <button onClick={handleExplore} className="transition hover:text-primary">Explore</button>
+            <button onClick={() => navigate("/ai-studio")} className="transition hover:text-primary">AI Studio</button>
+            <button onClick={() => navigate("/collaborate")} className="transition hover:text-primary">Collaborate</button>
+            <a href="#features" className="transition hover:text-primary">Features</a>
           </div>
-          <div className="text-cyan-400/80 font-mono">SYSTEM_ONLINE_SECURE</div>
+          <div className="font-mono text-primary">MADE FOR MUSIC MAKERS</div>
         </div>
       </footer>
 

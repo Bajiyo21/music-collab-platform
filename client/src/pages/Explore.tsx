@@ -80,12 +80,12 @@ export default function Explore() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-card">
         <div className="container flex min-h-16 items-center justify-between gap-3 px-4">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-gray-400 hover:text-cyan-300"><ArrowLeft size={18} /><span className="hidden sm:inline">Back</span></button>
+          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-muted-foreground hover:text-primary"><ArrowLeft size={18} /><span className="hidden sm:inline">Back</span></button>
           <span className="text-xl font-bold tracking-wider"><span className="neon-cyan">TUNE</span><span>×</span><span className="neon-magenta">COLLAB</span></span>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/collaborate")} className="hidden rounded border border-white/10 px-3 py-2 text-sm text-gray-400 hover:text-cyan-300 md:block">Collaborate</button>
+            <button onClick={() => navigate("/collaborate")} className="hidden rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:text-primary md:block">Collaborate</button>
             <ThemeToggle />
             <Button onClick={() => navigate(isAuthenticated ? "/dashboard" : "/")} className="border border-border bg-card text-xs text-foreground hover:border-primary/50 hover:text-primary">{isAuthenticated ? "Dashboard" : "Sign in"}</Button>
           </div>
@@ -94,21 +94,21 @@ export default function Explore() {
 
       <main className="container max-w-6xl px-4 pb-16 pt-24">
         <div className="mb-8">
-          <p className="mb-2 text-xs uppercase tracking-[0.3em] text-cyan-300">Public signal index</p>
+          <p className="mb-2 text-xs uppercase tracking-[0.22em] text-primary">Public signal index</p>
           <h1 className="!text-[clamp(1.6rem,6.5vw,3rem)] font-bold leading-[0.95] tracking-tight"><span className="neon-cyan">DISCOVER</span><span className="mx-2">×</span><span className="neon-magenta">EXPLORE</span></h1>
-          <p className="mt-3 max-w-2xl text-gray-400">Browse tracks that musicians have made public, preview them, and connect around the sound.</p>
+          <p className="mt-3 max-w-2xl text-muted-foreground">Browse tracks that musicians have made public, preview them, and connect around the sound.</p>
         </div>
 
         <div className="mb-8 space-y-4">
-          <Input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search tracks, musicians, or tags" className="border-white/10 bg-black/40 text-white" />
+          <Input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search tracks, musicians, or tags" className="border-input bg-card text-foreground" />
           <div className="flex flex-wrap items-center gap-2">
-            {genres.map((genre) => <button key={genre} onClick={() => setSelectedGenre(genre === "All" ? null : genre)} className={`rounded border px-3 py-2 text-sm ${selectedGenre === genre || (!selectedGenre && genre === "All") ? "border-cyan-400/60 bg-cyan-400/15 text-cyan-300" : "border-white/10 bg-white/5 text-gray-400 hover:bg-white/10"}`}>{genre}</button>)}
+            {genres.map((genre) => <button key={genre} onClick={() => setSelectedGenre(genre === "All" ? null : genre)} className={`rounded-md border px-3 py-2 text-sm ${selectedGenre === genre || (!selectedGenre && genre === "All") ? "border-primary/50 bg-accent text-accent-foreground" : "border-border bg-card text-muted-foreground hover:bg-secondary"}`}>{genre}</button>)}
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
-            <p className="text-sm text-gray-500">Showing {visibleRows.length} of {filteredRows.length} public tracks</p>
-            <label className="flex items-center gap-2 text-sm text-gray-400">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+            <p className="text-sm text-muted-foreground">Showing {visibleRows.length} of {filteredRows.length} public tracks</p>
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
               Sort
-              <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)} className="rounded border border-white/10 bg-black/60 px-3 py-2 text-white">
+              <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)} className="rounded-md border border-input bg-card px-3 py-2 text-foreground">
                 <option value="trending">Trending</option>
                 <option value="newest">Newest</option>
                 <option value="popular">Most liked</option>
@@ -117,26 +117,26 @@ export default function Explore() {
           </div>
         </div>
 
-        {recommendedArtists.length > 0 && <section className="mb-10 rounded-lg border border-white/10 bg-black/40 p-5 sm:p-6">
-          <div className="mb-5 flex flex-wrap items-end justify-between gap-2"><div><p className="text-xs uppercase tracking-[0.25em] text-cyan-300">Creator signal</p><h2 className="mt-1 text-2xl font-bold">Recommended artists</h2></div><p className="text-xs text-gray-500">Ranked from public track activity</p></div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{recommendedArtists.map((artist) => <button key={artist.id} onClick={() => navigate(`/profile/${artist.id}`)} className="group rounded-lg border border-white/10 bg-white/5 p-4 text-left transition hover:border-cyan-400/40 hover:bg-cyan-400/5"><div className="flex items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400/30 to-fuchsia-500/30 font-bold text-cyan-300">{artist.name.slice(0, 1).toUpperCase()}</span><div className="min-w-0"><p className="truncate font-semibold group-hover:text-cyan-300">{artist.name}</p><p className="mt-0.5 text-xs text-gray-500">{artist.trackCount} public {artist.trackCount === 1 ? "track" : "tracks"}</p></div></div><div className="mt-4 flex flex-wrap gap-1">{artist.genres.slice(0, 2).map((genre) => <span key={genre} className="rounded border border-cyan-400/25 px-2 py-1 text-[11px] text-cyan-300">{genre}</span>)}</div></button>)}</div>
+        {recommendedArtists.length > 0 && <section className="mb-10 rounded-xl border border-border bg-card p-5 sm:p-6">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-2"><div><p className="text-xs uppercase tracking-[0.22em] text-primary">Creator signal</p><h2 className="mt-1 text-2xl font-bold">Recommended artists</h2></div><p className="text-xs text-muted-foreground">Ranked from public track activity</p></div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{recommendedArtists.map((artist) => <button key={artist.id} onClick={() => navigate(`/profile/${artist.id}`)} className="group rounded-lg border border-border bg-background p-4 text-left transition hover:border-primary/40 hover:bg-secondary"><div className="flex items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent font-bold text-accent-foreground">{artist.name.slice(0, 1).toUpperCase()}</span><div className="min-w-0"><p className="truncate font-semibold group-hover:text-primary">{artist.name}</p><p className="mt-0.5 text-xs text-muted-foreground">{artist.trackCount} public {artist.trackCount === 1 ? "track" : "tracks"}</p></div></div><div className="mt-4 flex flex-wrap gap-1">{artist.genres.slice(0, 2).map((genre) => <span key={genre} className="rounded border border-border bg-card px-2 py-1 text-[11px] text-muted-foreground">{genre}</span>)}</div></button>)}</div>
         </section>}
 
         {isLoading ? <div className="py-20 text-center text-cyan-300"><Loader2 className="mx-auto animate-spin" /></div> : visibleRows.length === 0 ? <div className="rounded border border-dashed border-white/15 px-6 py-16 text-center text-gray-500"><Music className="mx-auto mb-4 opacity-40" /><p>No public tracks match this search.</p></div> : <>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {visibleRows.map(({ track, creator, genre }) => <article key={track.id} className="overflow-hidden rounded-lg border border-white/10 bg-black/40 transition hover:border-cyan-400/40">
-              <div className="relative flex aspect-[1.5] items-center justify-center overflow-hidden bg-gradient-to-br from-cyan-400/15 to-fuchsia-500/15">
-                {track.coverArtUrl ? <img src={track.coverArtUrl} alt={`${track.title} cover art`} className="h-full w-full object-cover" /> : <Music size={60} className="text-cyan-300/50" />}
-                {track.fileUrl && <button onClick={() => setPlayingTrackId(playingTrackId === track.id ? null : track.id)} className="absolute inset-0 flex items-center justify-center bg-black/35 opacity-0 transition hover:opacity-100 focus:opacity-100" aria-label={`${playingTrackId === track.id ? "Pause" : "Play"} ${track.title}`}><Play size={44} className="fill-cyan-300 text-cyan-300" /></button>}
+            {visibleRows.map(({ track, creator, genre }) => <article key={track.id} className="overflow-hidden rounded-xl border border-border bg-card transition hover:border-primary/40 hover:shadow-sm">
+              <div className="relative flex aspect-[1.5] items-center justify-center overflow-hidden border-b border-border bg-secondary">
+                {track.coverArtUrl ? <img src={track.coverArtUrl} alt={`${track.title} cover art`} className="h-full w-full object-cover" /> : <Music size={52} className="text-primary/45" />}
+                {track.fileUrl && <button onClick={() => setPlayingTrackId(playingTrackId === track.id ? null : track.id)} className="absolute inset-0 flex items-center justify-center bg-foreground/15 opacity-0 transition hover:opacity-100 focus:opacity-100" aria-label={`${playingTrackId === track.id ? "Pause" : "Play"} ${track.title}`}><Play size={40} className="fill-primary-foreground text-primary-foreground" /></button>}
               </div>
               <div className="p-5">
                 <h2 className="truncate text-lg font-bold">{track.title}</h2>
-                <button onClick={() => navigate(`/profile/${creator.id}`)} className="mt-1 text-sm text-gray-400 hover:text-cyan-300">{creator.name ?? "TuneCollab musician"}</button>
-                <div className="mt-4 flex flex-wrap gap-2">{genre?.name && <span className="rounded border border-cyan-400/30 bg-cyan-400/10 px-2 py-1 text-xs text-cyan-300">{genre.name}</span>}<span className="rounded border border-white/10 px-2 py-1 text-xs text-gray-500">{Math.floor(Number(track.duration ?? 0) / 60)}:{String(Number(track.duration ?? 0) % 60).padStart(2, "0")}</span></div>
+                <button onClick={() => navigate(`/profile/${creator.id}`)} className="mt-1 text-sm text-muted-foreground hover:text-primary">{creator.name ?? "TuneCollab musician"}</button>
+                <div className="mt-4 flex flex-wrap gap-2">{genre?.name && <span className="rounded border border-primary/25 bg-accent px-2 py-1 text-xs text-accent-foreground">{genre.name}</span>}<span className="rounded border border-border px-2 py-1 text-xs text-muted-foreground">{Math.floor(Number(track.duration ?? 0) / 60)}:{String(Number(track.duration ?? 0) % 60).padStart(2, "0")}</span></div>
                 {playingTrackId === track.id && track.fileUrl && <audio autoPlay controls src={track.fileUrl} onEnded={() => setPlayingTrackId(null)} className="mt-4 h-9 w-full" />}
-                <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-sm text-gray-500">
-                  <div className="flex gap-4"><button onClick={() => { if (!isAuthenticated) return toast.error("Sign in to favorite tracks"); favoriteMutation.mutate({ trackId: track.id }); }} className={`flex items-center gap-1 hover:text-fuchsia-300 ${favoriteTrackIds.includes(track.id) ? "text-fuchsia-300" : ""}`} aria-label={`Favorite ${track.title}`}><Heart size={16} fill={favoriteTrackIds.includes(track.id) ? "currentColor" : "none"} /><span>Favorite</span></button><button onClick={() => navigate(`/track/${track.id}`)} className="flex items-center gap-1 hover:text-cyan-300"><MessageCircle size={16} />{Number(track.comments ?? 0)}</button></div>
-                  <button onClick={() => shareTrack(track.title, track.id)} className="hover:text-cyan-300" aria-label={`Share ${track.title}`}><Share2 size={16} /></button>
+                <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-sm text-muted-foreground">
+                  <div className="flex gap-4"><button onClick={() => { if (!isAuthenticated) return toast.error("Sign in to favorite tracks"); favoriteMutation.mutate({ trackId: track.id }); }} className={`flex items-center gap-1 hover:text-primary ${favoriteTrackIds.includes(track.id) ? "text-primary" : ""}`} aria-label={`Favorite ${track.title}`}><Heart size={16} fill={favoriteTrackIds.includes(track.id) ? "currentColor" : "none"} /><span>Favorite</span></button><button onClick={() => navigate(`/track/${track.id}`)} className="flex items-center gap-1 hover:text-primary"><MessageCircle size={16} />{Number(track.comments ?? 0)}</button></div>
+                  <button onClick={() => shareTrack(track.title, track.id)} className="hover:text-primary" aria-label={`Share ${track.title}`}><Share2 size={16} /></button>
                 </div>
               </div>
             </article>)}
