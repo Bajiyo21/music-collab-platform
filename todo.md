@@ -221,3 +221,8 @@
 - [x] Remove the cover image / showcase card from `client/src/pages/Home.tsx`
 - [x] Verify test suite and build compilation pass successfully
 - [x] Save updated production checkpoint
+
+## Phase 23: Remove Duplicate Recent Tracks in Dashboard
+- [x] Inspect `client/src/pages/Dashboard.tsx` to locate duplicated Recent Tracks sections
+- [x] Remove the extra duplicate section while keeping clean tab switching and state
+- [x] Run test suite, verify compilation, and save final production checkpoint
