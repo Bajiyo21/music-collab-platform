@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { ArrowLeft, Heart, Loader2, MessageCircle, Music, Play, Share2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { filterAndSortTrackRows, mergeTrackPage, type DiscoverySort } from "@shared/discovery";
 
@@ -77,13 +78,14 @@ export default function Explore() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-md">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
         <div className="container flex min-h-16 items-center justify-between gap-3 px-4">
           <button onClick={() => navigate("/")} className="flex items-center gap-2 text-gray-400 hover:text-cyan-300"><ArrowLeft size={18} /><span className="hidden sm:inline">Back</span></button>
-          <span className="text-xl font-bold tracking-wider"><span className="neon-cyan">TUNE</span><span className="text-white">×</span><span className="neon-magenta">COLLAB</span></span>
+          <span className="text-xl font-bold tracking-wider"><span className="neon-cyan">TUNE</span><span>×</span><span className="neon-magenta">COLLAB</span></span>
           <div className="flex items-center gap-2">
             <button onClick={() => navigate("/collaborate")} className="hidden rounded border border-white/10 px-3 py-2 text-sm text-gray-400 hover:text-cyan-300 md:block">Collaborate</button>
-            <Button onClick={() => navigate(isAuthenticated ? "/dashboard" : "/")} className="border border-white/10 bg-black/40 text-xs text-white hover:border-cyan-400/50 hover:text-cyan-300">{isAuthenticated ? "Dashboard" : "Sign in"}</Button>
+            <ThemeToggle />
+            <Button onClick={() => navigate(isAuthenticated ? "/dashboard" : "/")} className="border border-border bg-card text-xs text-foreground hover:border-primary/50 hover:text-primary">{isAuthenticated ? "Dashboard" : "Sign in"}</Button>
           </div>
         </div>
       </header>

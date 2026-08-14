@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { Sparkles, Bot, ArrowLeft, Send, Music, Wand2, RefreshCw, Loader2, ListMusic } from "lucide-react";
 import { toast } from "sonner";
 import { startLogin } from "@/const";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function AiStudio() {
   const [, navigate] = useLocation();
@@ -79,18 +80,19 @@ export default function AiStudio() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020202] text-white">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-md">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-gray-400 hover:text-cyan-300">
               <ArrowLeft size={18} /> <span className="hidden sm:inline">Dashboard</span>
             </button>
             <span className="font-bold tracking-wider">
-              <span className="neon-cyan">TUNE</span><span className="text-white">×</span><span className="neon-magenta">COLLAB</span> <span className="text-xs uppercase text-cyan-400/80">AI Studio</span>
+              <span className="neon-cyan">TUNE</span><span>×</span><span className="neon-magenta">COLLAB</span> <span className="text-xs uppercase text-primary/80">AI Studio</span>
             </span>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             {!isAuthenticated ? (
               <button onClick={() => startLogin()} className="rounded bg-cyan-400 px-4 py-2 text-sm font-bold text-black transition hover:bg-cyan-300">
                 Sign In

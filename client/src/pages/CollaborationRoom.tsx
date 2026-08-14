@@ -4,6 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, Download, Loader2, MessageSquare, Music, Plus, Send, Trash2, Users, Volume2, X } from "lucide-react";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type LayerView = { id: number; trackId: number; title: string; artist: string; fileUrl: string; duration: number; volume: number; pan: number; startTime: number };
 

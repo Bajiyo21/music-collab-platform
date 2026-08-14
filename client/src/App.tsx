@@ -8,6 +8,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { ThemeToggle } from "./components/ThemeToggle";
 import Home from "./pages/Home";
 import Explore from "./pages/Explore";
 import Profile from "./pages/Profile";
@@ -60,6 +61,17 @@ function Router() {
   );
 }
 
+function CollaborationThemeControl() {
+  const [location] = useLocation();
+  if (!location.startsWith("/collaboration/")) return null;
+
+  return (
+    <div className="fixed right-4 top-20 z-[60]">
+      <ThemeToggle />
+    </div>
+  );
+}
+
 // NOTE: About Theme
 // - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
 //   to keep consistent foreground/background color across components
@@ -70,11 +82,12 @@ function App() {
     <ErrorBoundary>
         <ThemeProvider
           defaultTheme="light"
-          // switchable
+          switchable
         >
         <TooltipProvider>
           <Toaster />
           <OnboardingRedirect />
+          <CollaborationThemeControl />
           <Router />
         </TooltipProvider>
       </ThemeProvider>

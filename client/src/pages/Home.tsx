@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { Music, Zap, Users, Headphones } from "lucide-react";
 import { startLogin } from "@/const";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -47,6 +48,7 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-4">
+            <ThemeToggle />
             {isAuthenticated ? (
               <>
                 <span className="text-sm text-muted-foreground hidden sm:inline">{user?.name}</span>

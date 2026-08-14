@@ -4,6 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, Bell, Heart, Loader2, LogOut, Music, Plus, TrendingUp, Users, Settings2, Sparkles } from "lucide-react";
 import { TrackManageDialog } from "@/components/TrackManageDialog";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type DashboardTrack = {
   id: number;
@@ -69,6 +70,7 @@ export default function Dashboard() {
             <span className="neon-magenta">COLLAB</span>
           </span>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <button onClick={() => user?.id && navigate(`/profile/${user.id}`)} className="rounded border border-white/10 px-3 py-2 text-sm text-gray-400 hover:text-cyan-300">
               Profile
             </button>
