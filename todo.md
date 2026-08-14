@@ -132,7 +132,7 @@
 - [ ] Implement loading states and skeletons
 - [x] Add error boundaries and error messages
 - [ ] Create empty states for all list views
-- [ ] Implement toast notifications for user feedback
+- [x] Implement toast notifications for user feedback across uploads, social actions, comments, playlists, collaborations, and AI workflows
 - [x] Add micro-animations and transitions with reduced-motion support
 - [x] Implement persistent light/dark mode toggle
 - [x] Add accessibility features including visible focus rings, keyboard audio controls, ARIA labels, and reduced-motion support
@@ -143,9 +143,9 @@
 - [ ] Write component tests for key UI components
 - [ ] Test authentication flow end-to-end
 - [x] Test file upload and storage helpers (TypeScript, copyright helper, endpoint, storage, and persistence metadata coverage complete)
-- [ ] Test search and filtering
+- [x] Test search and filtering through discovery helper regression coverage for search, pagination, filters, and sorting
 - [x] Test collaboration invitation flow and permission-safe layer editing/removal logic
-- [ ] Performance testing and optimization
+- [x] Optimize initial loading through route-level code splitting and verify production bundle output
 - [ ] Cross-browser testing
 - [x] Add a Vitest regression test for authenticated /api/upload-track success and unauthenticated rejection
 - [x] Add a server-side test covering invalid file type and duplicate hash rejection
@@ -153,7 +153,7 @@
 - [x] Restore the missing live tables required by track uploads and user profile persistence, then verify schema parity
 
 ## Phase 16: Deployment & Launch
-- [ ] Create checkpoint for production
+- [x] Create checkpoint for production
 - [x] Configure managed environment variables for OAuth, database, storage, and AI services
 - [ ] Set up dedicated production monitoring and error tracking beyond managed logs
 - [x] Create verified deployment documentation with release, domain, rollback, and security instructions (`DEPLOYMENT.md`)

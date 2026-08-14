@@ -28,6 +28,7 @@ import {
 } from "./db";
 import { buildCollaborationNotificationRows } from "./notification-utils";
 import { canManageCollaboration, canRemoveCollaborationLayer } from "@shared/collaboration-permissions";
+import { canManageTrackComment } from "@shared/comment-permissions";
 import { getInvitationResolution } from "@shared/collaboration-flow";
 
 export async function getUserById(userId: number) {
@@ -260,9 +261,9 @@ export async function addTrackComment(trackId: number, userId: number, text: str
 export async function updateTrackCommentRecord(commentId: number, userId: number, text: string) {
   const db = await getDb();
   if (!db) throw new Error("Database is not available");
-  const existing = await db.select({ id: trackComments.id }).from(trackComments)
-    .where(and(eq(trackComments.id, commentId), eq(trackComments.userId, userId))).limit(1);
-  if (!existing[0]) throw new Error("Comment not found or not owned by you");
+  const existing = await db.select({ id: trackComments.id, userId: trackComments.userId }).from(trackComments)
+    .where(eq(trackComments.id, commentId)).limit(1);
+  if (!existing[0] || !canManageTrackComment(existing[0].userId, userId)) throw new Error("Comment not found or not owned by you");
   await db.update(trackComments).set({ text }).where(eq(trackComments.id, commentId));
   return { updated: true };
 }
@@ -270,9 +271,9 @@ export async function updateTrackCommentRecord(commentId: number, userId: number
 export async function deleteTrackCommentRecord(commentId: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database is not available");
-  const existing = await db.select({ trackId: trackComments.trackId }).from(trackComments)
-    .where(and(eq(trackComments.id, commentId), eq(trackComments.userId, userId))).limit(1);
-  if (!existing[0]) throw new Error("Comment not found or not owned by you");
+  const existing = await db.select({ trackId: trackComments.trackId, userId: trackComments.userId }).from(trackComments)
+    .where(eq(trackComments.id, commentId)).limit(1);
+  if (!existing[0] || !canManageTrackComment(existing[0].userId, userId)) throw new Error("Comment not found or not owned by you");
   await db.delete(trackComments).where(eq(trackComments.id, commentId));
   await db.update(tracks).set({ comments: sql`GREATEST(COALESCE(${tracks.comments}, 0) - 1, 0)` }).where(eq(tracks.id, existing[0].trackId));
   return { deleted: true, trackId: existing[0].trackId };
