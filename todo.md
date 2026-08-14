@@ -21,9 +21,9 @@
 - [ ] Implement login flow with Manus OAuth
 - [x] Implement signup flow with user profile creation through Manus OAuth profile initialization
 - [x] Implement a first-run onboarding form for new users (avatar, bio, social links)
-- [ ] Add logout functionality
+- [x] Add logout functionality with secure cookie clearing and client session cleanup
 - [ ] Create auth guards for protected routes
-- [ ] Add session persistence and error handling
+- [x] Add session persistence and error handling through authenticated session cookies, Preview fallback, and query error handling
 
 ## Phase 4: Database Schema & Core Models
 - [x] Design and create User model (profile, bio, social links, avatar)
@@ -130,13 +130,13 @@
 
 ## Phase 14: Advanced UI Polish
 - [ ] Implement loading states and skeletons
-- [ ] Add error boundaries and error messages
+- [x] Add error boundaries and error messages
 - [ ] Create empty states for all list views
 - [ ] Implement toast notifications for user feedback
 - [ ] Add micro-animations and transitions
 - [ ] Implement dark mode toggle (if needed)
 - [ ] Add accessibility features (ARIA labels, keyboard navigation)
-- [ ] Optimize performance (lazy loading, code splitting)
+- [x] Optimize performance with route-level lazy loading and a shared accessible loading fallback
 
 ## Phase 15: Testing & Quality Assurance
 - [ ] Write unit tests for API procedures
@@ -156,7 +156,7 @@
 - [ ] Create checkpoint for production
 - [ ] Configure environment variables
 - [ ] Set up monitoring and error tracking
-- [ ] Create deployment documentation
+- [x] Create verified deployment documentation with release, domain, rollback, and security instructions (`DEPLOYMENT.md`)
 - [ ] Publish website
 - [ ] Final QA on production
 - [ ] Create user documentation/help guide

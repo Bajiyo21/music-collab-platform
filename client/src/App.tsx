@@ -1,26 +1,26 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { ThemeToggle } from "./components/ThemeToggle";
-import Home from "./pages/Home";
-import Explore from "./pages/Explore";
-import Profile from "./pages/Profile";
-import CollaborationRoom from "./pages/CollaborationRoom";
-import CollaborationHub from "./pages/CollaborationHub";
-import Dashboard from "./pages/Dashboard";
-import Upload from "./pages/Upload";
-import Playlists from "./pages/Playlists";
-import PlaylistDetail from "./pages/PlaylistDetail";
-import TrackDetail from "./pages/TrackDetail";
-import Notifications from "./pages/Notifications";
-import AiStudio from "./pages/AiStudio";
+const Home = lazy(() => import("./pages/Home"));
+const Explore = lazy(() => import("./pages/Explore"));
+const Profile = lazy(() => import("./pages/Profile"));
+const CollaborationRoom = lazy(() => import("./pages/CollaborationRoom"));
+const CollaborationHub = lazy(() => import("./pages/CollaborationHub"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Upload = lazy(() => import("./pages/Upload"));
+const Playlists = lazy(() => import("./pages/Playlists"));
+const PlaylistDetail = lazy(() => import("./pages/PlaylistDetail"));
+const TrackDetail = lazy(() => import("./pages/TrackDetail"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const AiStudio = lazy(() => import("./pages/AiStudio"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 function OnboardingRedirect() {
   const { user, loading } = useAuth();
@@ -39,8 +39,7 @@ function OnboardingRedirect() {
 }
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
-  return (
+  return <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground" role="status" aria-live="polite">Loading TuneCollab…</div>}>
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/explore" component={Explore} />
@@ -58,7 +57,7 @@ function Router() {
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
-  );
+  </Suspense>;
 }
 
 function CollaborationThemeControl() {
